@@ -54,11 +54,19 @@ CITY_TO_IATA = {
 
 # Nearest airport when destination is not directly served
 NEAREST_HUB = {
-    "kodaikanal": "MAA",  # Chennai
+    "kodaikanal": "IXM",  # Madurai
+    "kanyakumari": "TRV", # Trivandrum
+    "ramnad":     "IXM",  # Madurai
+    "rameswaram": "IXM",
     "coorg":      "BLR",  # Bangalore
     "mysore":     "BLR",
-    "rishikesh":  "DEL",
+    "rishikesh":  "DED",  # Dehradun
+    "haridwar":   "DED",
     "rajasthan":  "JAI",
+    "munnar":     "COK",
+    "alleppey":   "COK",
+    "hampi":      "VDY",  # Vidyanagar
+    "gokarna":    "GOX",  # Goa Mopa
 }
 
 AIRLINE_NAMES = {

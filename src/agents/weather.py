@@ -86,10 +86,13 @@ def _fetch_from_tavily(destination: str) -> str:
 
         # Try to pull out temperature with a regex from the combined text
         combined = " ".join(snippets[:3])
-        temp_match = re.search(r"(\d{1,3})\s*°?\s*C", combined)
-        humid_match = re.search(r"humidity[:\s]+(\d{1,3})\s*%", combined, re.IGNORECASE)
+        temp_match = re.search(r"(?:temp(?:erature)?.*?|)(\d{1,3})\s*(?:°|degrees?|deg)?\s*[CF]\b", combined, re.IGNORECASE)
+        if not temp_match:
+            temp_match = re.search(r"\b(\d{1,2})\s*°", combined)
+            
+        humid_match = re.search(r"humidity\s*[:\-]?\s*(\d{1,3})\s*%", combined, re.IGNORECASE)
         cond_match  = re.search(
-            r"\b(sunny|clear|cloudy|partly cloudy|overcast|rain|drizzle|thunderstorm|foggy|haze|windy|humid)\b",
+            r"\b(sunny|clear|cloudy|partly cloudy|overcast|rain|drizzle|thunderstorm|foggy|haze|windy|humid|showers|snow)\b",
             combined, re.IGNORECASE
         )
 
