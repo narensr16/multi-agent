@@ -1,0 +1,111 @@
+"""
+transport.py — Transport Agent
+
+Searches Tavily for transport options to the destination.
+Uses strict mode-matching so each transport mode only gets content about that mode.
+"""
+
+import os
+import re
+from dotenv import load_dotenv
+from tavily import TavilyClient
+
+load_dotenv()
+
+_TAVILY_KEY = os.getenv("TAVILY_API_KEY", "").strip()
+
+# Mode patterns — POSITIVE match for the mode AND NEGATIVE for other modes
+_MODES = {
+    "✈  By Air   ": {
+        "pos": re.compile(
+            r"\b(flight|fly|airport|airline|airways|air india|indigo|spicejet|vistara|akasa|terminal)\b",
+            re.IGNORECASE,
+        ),
+        "neg": re.compile(r"\b(train|bus|road|highway)\b", re.IGNORECASE),
+    },
+    "🚆  By Train ": {
+        "pos": re.compile(
+            r"\b(train|railway|rail|irctc|express|superfast|shatabdi|rajdhani|junction|railway station)\b",
+            re.IGNORECASE,
+        ),
+        "neg": re.compile(r"\b(flight|fly|airport|bus|cab)\b", re.IGNORECASE),
+    },
+    "🚌  By Bus   ": {
+        "pos": re.compile(
+            r"\b(bus|road|highway|nh\s*\d|national highway|drive|cab|ksrtc|msrtc|gsrtc|volvo|coach)\b",
+            re.IGNORECASE,
+        ),
+        "neg": re.compile(r"\b(flight|fly|airport|train|rail)\b", re.IGNORECASE),
+    },
+}
+
+
+def _clean(text: str) -> str:
+    if not text:
+        return ""
+    text = re.sub(r"https?://\S+", "", text)
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    text = re.sub(r"\|", " - ", text)  # Replace | with -
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def _best_sentence(text: str, pos: re.Pattern, neg: re.Pattern, max_chars: int = 160) -> str:
+    """Return first sentence that matches pos pattern AND doesn't match neg pattern."""
+    if not text:
+        return ""
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    for s in sentences:
+        s = s.strip()
+        if len(s) < 20:
+            continue
+        if pos.search(s) and not neg.search(s):
+            return s[:max_chars] + ("…" if len(s) > max_chars else "")
+    # Fallback: accept sentence even if neg matches, just needs pos
+    for s in sentences:
+        s = s.strip()
+        if len(s) > 20 and pos.search(s):
+            return s[:max_chars] + ("…" if len(s) > max_chars else "")
+    return ""
+
+
+def transport_agent(state: dict) -> dict:
+    destination = state.get("destination", "")
+
+    if not destination or destination == "Unknown":
+        return {"transport": "Transport search skipped: destination unknown."}
+    if not _TAVILY_KEY:
+        return {"transport": "Transport search skipped: TAVILY_API_KEY not configured."}
+
+    try:
+        client = TavilyClient(api_key=_TAVILY_KEY)
+
+        # Run mode-specific queries for better precision
+        all_text = {}
+        for mode_label in _MODES:
+            if "Air" in mode_label:
+                q = f"how to reach {destination} by flight airport nearest airlines"
+            elif "Train" in mode_label:
+                q = f"how to reach {destination} by train railway station nearest"
+            else:
+                q = f"how to reach {destination} by bus road highway distance hours"
+
+            res = client.search(q, max_results=3)
+            parts = [_clean(res.get("answer") or "")]
+            parts += [_clean(r.get("content") or "") for r in res.get("results") or []]
+            all_text[mode_label] = " ".join(p for p in parts if p)
+
+        # Extract one clean sentence per mode
+        lines = []
+        for label, patterns in _MODES.items():
+            text = all_text.get(label, "")
+            sentence = _best_sentence(text, patterns["pos"], patterns["neg"])
+            if sentence:
+                lines.append(f"  {label}: {sentence}")
+
+        transport_text = "\n".join(lines) if lines else f"  Transport info not available for {destination}."
+
+    except Exception as e:
+        transport_text = f"  Transport search failed: {e}"
+
+    return {"transport": transport_text}
