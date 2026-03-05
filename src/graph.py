@@ -15,6 +15,8 @@ Sequential topology:
        │
   itinerary_agent   ← writes "itinerary"
        │
+  map_agent         ← writes "map_url"  (Google Maps URL, free)
+       │
   budget_agent      ← writes "estimated_cost"
        │
   supervisor_final  ← assembles "final_response"
@@ -35,6 +37,7 @@ from agents.hotel       import hotel_agent
 from agents.transport   import transport_agent
 from agents.flight      import flight_agent
 from agents.itinerary   import itinerary_agent
+from agents.map         import map_agent
 from agents.budget      import budget_agent
 
 
@@ -49,6 +52,7 @@ def build_graph():
     graph.add_node("transport_agent",  transport_agent)
     graph.add_node("flight_agent",     flight_agent)
     graph.add_node("itinerary_agent",  itinerary_agent)
+    graph.add_node("map_agent",        map_agent)
     graph.add_node("budget_agent",     budget_agent)
     graph.add_node("supervisor_final", supervisor_final)
 
@@ -59,7 +63,8 @@ def build_graph():
     graph.add_edge("hotel_agent",      "transport_agent")
     graph.add_edge("transport_agent",  "flight_agent")
     graph.add_edge("flight_agent",     "itinerary_agent")
-    graph.add_edge("itinerary_agent",  "budget_agent")
+    graph.add_edge("itinerary_agent",  "map_agent")
+    graph.add_edge("map_agent",        "budget_agent")
     graph.add_edge("budget_agent",     "supervisor_final")
     graph.add_edge("supervisor_final", END)
 

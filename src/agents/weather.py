@@ -25,7 +25,7 @@ TAVILY_API_KEY  = os.getenv("TAVILY_API_KEY",  "").strip()
 # ──────────────────────────────────────────────────────────────────────────────
 
 def _fetch_from_weatherapi(destination: str) -> str | None:
-    """Return formatted weather string or None on any failure."""
+    """Return formatted current weather string or None on any failure."""
     if not WEATHER_API_KEY or WEATHER_API_KEY == "your_weatherapi_key_here":
         return None
 
@@ -37,7 +37,7 @@ def _fetch_from_weatherapi(destination: str) -> str | None:
         resp = requests.get(url, timeout=10)
 
         if resp.status_code != 200:
-            return None  # silently trigger fallback
+            return None
 
         data = resp.json()
         if "current" not in data:
@@ -56,6 +56,55 @@ def _fetch_from_weatherapi(destination: str) -> str | None:
             f"  Humidity    : {humidity}%\n"
             f"  Wind        : {wind} km/h"
         )
+
+    except Exception:
+        return None
+
+
+def _fetch_forecast_from_weatherapi(destination: str) -> str | None:
+    """Return 3-day forecast string or None on failure."""
+    if not WEATHER_API_KEY or WEATHER_API_KEY == "your_weatherapi_key_here":
+        return None
+
+    try:
+        url = (
+            f"http://api.weatherapi.com/v1/forecast.json"
+            f"?key={WEATHER_API_KEY}&q={destination}&days=3&aqi=no&alerts=no"
+        )
+        resp = requests.get(url, timeout=10)
+        if resp.status_code != 200:
+            return None
+
+        data = resp.json()
+        forecast_days = data.get("forecast", {}).get("forecastday", [])
+        if not forecast_days:
+            return None
+
+        _COND_ICON = {
+            "sunny": "☀️", "clear": "☀️", "partly cloudy": "⛅",
+            "cloudy": "☁️", "overcast": "☁️", "rain": "🌧️",
+            "drizzle": "🌧️", "thunderstorm": "⚡", "snow": "❄️",
+            "fog": "🌫️", "mist": "🌫️",
+        }
+
+        lines = []
+        for day in forecast_days:
+            date_str = day.get("date", "")            # '2026-03-06'
+            day_data = day.get("day", {})
+            max_c    = day_data.get("maxtemp_c", "?")
+            min_c    = day_data.get("mintemp_c", "?")
+            cond     = day_data.get("condition", {}).get("text", "")
+            icon     = next((v for k, v in _COND_ICON.items() if k in cond.lower()), "🌤️")
+            # Format date as 'Thu 06 Mar'
+            try:
+                from datetime import datetime
+                d = datetime.strptime(date_str, "%Y-%m-%d")
+                date_label = d.strftime("%a %d %b")
+            except Exception:
+                date_label = date_str
+            lines.append(f"  {date_label} : {icon} {max_c}°C / {min_c}°C — {cond}")
+
+        return "\n".join(lines) if lines else None
 
     except Exception:
         return None
@@ -122,7 +171,7 @@ def _fetch_from_tavily(destination: str) -> str:
 
 def weather_agent(state: dict) -> dict:
     """
-    Fetch current weather for state["destination"].
+    Fetch current weather + 3-day forecast for state["destination"].
     Tries WeatherAPI first; falls back to Tavily search.
     Writes: weather (formatted string)
     """
@@ -131,9 +180,20 @@ def weather_agent(state: dict) -> dict:
     if not destination or destination == "Unknown":
         return {"weather": "Weather lookup skipped: destination unknown."}
 
-    weather = _fetch_from_weatherapi(destination)
+    current_weather = _fetch_from_weatherapi(destination)
 
-    if weather is None:  # key missing or API error → use Tavily
+    if current_weather is None:  # key missing or API error → use Tavily
         weather = _fetch_from_tavily(destination)
+    else:
+        # Try to get 3-day forecast
+        forecast = _fetch_forecast_from_weatherapi(destination)
+        if forecast:
+            weather = (
+                current_weather
+                + "\n\n  📆 3-Day Forecast\n"
+                + forecast
+            )
+        else:
+            weather = current_weather
 
     return {"weather": weather}

@@ -29,6 +29,8 @@ class AgentState(TypedDict):
     itinerary: Optional[str]
     flights: Optional[str]
     estimated_cost: Optional[str]
+    map_url: Optional[str]
+    map_places: Optional[list]
 
     # Final assembled response (written ONLY by supervisor_final)
     final_response: Optional[str]

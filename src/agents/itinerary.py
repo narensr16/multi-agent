@@ -128,6 +128,54 @@ _FALLBACK = {
 }
 
 
+# ── Category-based default time estimates and entry fees ─────────────────────
+_CATEGORY_DEFAULTS = [
+    # (keyword_in_name,  time_estimate, entry_fee)
+    ("beach",           "~2 hrs",  "Free"),
+    ("park",            "~2 hrs",  "Free"),
+    ("garden",          "~2 hrs",  "Free"),
+    ("waterfall",       "~1.5 hrs","Free"),
+    ("lake",            "~1 hr",   "Free"),
+    ("museum",          "~2 hrs",  "~₹200"),
+    ("fort",            "~2 hrs",  "~₹100"),
+    ("palace",          "~2 hrs",  "~₹150"),
+    ("temple",          "~1 hr",   "Free"),
+    ("church",          "~1 hr",   "Free"),
+    ("basilica",        "~1 hr",   "Free"),
+    ("cathedral",       "~1 hr",   "Free"),
+    ("monastery",       "~1 hr",   "Free"),
+    ("market",          "~1.5 hrs","Free"),
+    ("zoo",             "~3 hrs",  "~₹300"),
+    ("aquarium",        "~2 hrs",  "~₹400"),
+    ("sanctuary",       "~3 hrs",  "~₹250"),
+    ("reserve",         "~3 hrs",  "~₹150"),
+    ("universal",       "~6 hrs",  "~₹5000"),
+    ("adventure",       "~3 hrs",  "~₹800"),
+    ("safari",          "~3 hrs",  "~₹300"),
+    ("cruise",          "~2 hrs",  "~₹500"),
+    ("cable car",       "~1 hr",   "~₹400"),
+    ("viewpoint",       "~1 hr",   "Free"),
+    ("village",         "~1.5 hrs","Free"),
+    ("bay",             "~1.5 hrs","Free"),
+    ("island",          "~4 hrs",  "Free"),
+    ("sentosa",         "~5 hrs",  "~SGD 4"),
+    ("marina bay sands","~2 hrs",  "~SGD 23"),
+    ("gardens by the bay","~2 hrs","~SGD 28"),
+    ("merlion",         "~1 hr",   "Free"),
+    ("chinatown",       "~2 hrs",  "Free"),
+    ("little india",    "~2 hrs",  "Free"),
+]
+
+
+def _get_time_fee(place: str) -> str:
+    """Return formatted '(⏱ ~2 hrs | 🎟 Free)' string for a given place."""
+    pl = place.lower()
+    for keyword, time_est, fee in _CATEGORY_DEFAULTS:
+        if keyword in pl:
+            return f"(⏱ {time_est} | 🎟 {fee})"
+    return "(⏱ ~2 hrs | 🎟 Varies)"  # generic fallback
+
+
 def _build_itinerary(attractions: list, days: int, destination: str) -> str:
     slots = ["🌅 Morning   ", "☀️  Afternoon", "🌙 Evening   "]
     lines = []
@@ -144,7 +192,8 @@ def _build_itinerary(attractions: list, days: int, destination: str) -> str:
             day_items = attractions[idx: idx + 2]
             idx += 2
             for i, place in enumerate(day_items):
-                lines.append(f"     {slots[i + 1]}: Visit {place}")
+                tf = _get_time_fee(place)
+                lines.append(f"     {slots[i + 1]}: Visit {place}  {tf}")
             if len(day_items) < 2:
                 lines.append(f"     {slots[2]}: Relax and explore local area")
 
@@ -153,7 +202,8 @@ def _build_itinerary(attractions: list, days: int, destination: str) -> str:
             day_items = attractions[idx: idx + 2] if idx < n else []
             idx += 2
             for i, place in enumerate(day_items):
-                lines.append(f"     {slots[i]}: Visit {place}")
+                tf = _get_time_fee(place)
+                lines.append(f"     {slots[i]}: Visit {place}  {tf}")
             if len(day_items) < 2:
                 lines.append(f"     {slots[1]}: Rest and explore surroundings")
             lines.append(f"     {slots[2]}: Pack up and depart from {destination}")
@@ -163,7 +213,8 @@ def _build_itinerary(attractions: list, days: int, destination: str) -> str:
             day_items = attractions[idx: idx + 3] if idx < n else []
             idx += 3
             for i, place in enumerate(day_items):
-                lines.append(f"     {slots[i]}: Visit {place}")
+                tf = _get_time_fee(place)
+                lines.append(f"     {slots[i]}: Visit {place}  {tf}")
             # Pad missing slots
             for i in range(len(day_items), 3):
                 filler = ["Explore local markets", "Relax at a café", "Local dinner & leisure"][i % 3]

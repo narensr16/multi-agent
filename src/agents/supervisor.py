@@ -132,6 +132,8 @@ def supervisor_final(state: AgentState) -> dict:
     flights_raw   = state.get("flights") or "Flight data unavailable."
     itinerary_raw = state.get("itinerary") or "Itinerary data unavailable."
     cost_info     = state.get("estimated_cost")
+    map_url       = state.get("map_url", "")
+    map_places    = state.get("map_places", [])
 
     SEP  = "=" * 56
     SEP2 = "-" * 56
@@ -143,6 +145,18 @@ def supervisor_final(state: AgentState) -> dict:
         hotel_lines = hotels_raw
     else:
         hotel_lines = "  • No hotel data available."
+
+    # ── Map block ─────────────────────────────────────────────────────────────
+    if map_url:
+        map_block = f"  🔗 View on Google Maps: {map_url}\n"
+        if map_places:
+            map_block += "  📍 Attractions:\n"
+            for place in map_places[:8]:
+                q = place.replace(" ", "+")
+                link = f"https://maps.google.com/maps?q={q}"
+                map_block += f"      ∙ {place} → {link}\n"
+    else:
+        map_block = "  Map unavailable.\n"
 
     # ── Cost block ────────────────────────────────────────────────────────────
     if isinstance(cost_info, dict):
@@ -194,10 +208,15 @@ def supervisor_final(state: AgentState) -> dict:
         f"{SEP2}\n"
         f"{itinerary_raw}\n\n"
         f"{SEP2}\n"
+        f"  🗺  MAP\n"
+        f"{SEP2}\n"
+        f"{map_block}\n"
+        f"{SEP2}\n"
         f"  💰  ESTIMATED COST\n"
         f"{SEP2}\n"
         f"{cost_block}\n"
         f"{SEP}\n"
+
     )
 
     return {
