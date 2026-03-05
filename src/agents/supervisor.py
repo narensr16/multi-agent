@@ -29,26 +29,33 @@ KNOWN_DESTINATIONS = [
 def _extract_destination(text: str) -> str:
     """Extract destination from the query text."""
     text_lower = text.lower()
+    
+    # Check 'to <Dest>' directly
+    m1 = re.search(r'to\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)?)(?:\s+for|\s+from|\s+with|\s+budget|\s*$)', text, re.IGNORECASE)
+    if m1 and m1.group(1).lower().strip() not in ('go a', 'have a', 'take a', 'trip'):
+        return m1.group(1).strip().title()
 
-    # First, try known destinations (most reliable)
-    for dest in KNOWN_DESTINATIONS:
-        if dest in text_lower:
-            return dest.title()
-
-    # Fallback: regex for "trip to X", "visit X", "go to X" etc.
     match = re.search(
-        r"(?:visit|go to|travel to|trip to|plan.*?to|heading to|in)\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)"
-        r"(?:\s+for|\s+with|\s*$)",
-        text,
-        re.IGNORECASE,
-    )
+        r'(?:visit|travel to|trip to|plan.*?to|heading to|in)\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)'
+        r'(?:\s+for|\s+from|\s+with|\s*$)', text, re.IGNORECASE)
     if match:
-        candidate = match.group(1).strip()
-        # Avoid matching common words like "a", "the" etc.
-        if len(candidate) > 2 and candidate.lower() not in ("the", "for", "with"):
-            return candidate.title()
+        cand = match.group(1).strip()
+        if cand.lower() not in ('go a', 'have a', 'take a', 'trip'):
+            return cand.title()
 
+    for dest in KNOWN_DESTINATIONS:
+        if re.search(r'\b' + re.escape(dest) + r'\b', text_lower):
+            if not re.search(r'from\s+' + re.escape(dest), text_lower):
+                return dest.title()
+    
     return "Unknown"
+
+
+def _extract_origin(text: str) -> str:
+    m = re.search(r'from\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)?)(?:\s+to|\s+for|\s+with|\s+budget|\s*$)', text, re.IGNORECASE)
+    if m:
+        return m.group(1).strip().title()
+    return "DEL"
 
 
 def _extract_days(text: str) -> int:
@@ -95,34 +102,16 @@ def supervisor_init(state: AgentState) -> dict:
     """
     query = state.get("user_query", "")
 
-    # Very naive regex extractions for demonstration.
-    # In a full LangGraph pattern, you might use an LLM here to extract structured args.
-    dest_match = re.search(r"(?:to|visit) ([A-Za-z\s]+)(?: for| with)?", query, re.IGNORECASE)
-    days_match = re.search(r"(\d+)\s*-?\s*day", query, re.IGNORECASE)
-    
-    # Try to find an origin (e.g. "from Mumbai", "from Bangalore")
-    origin_match = re.search(r"from\s+([A-Za-z\s]+)(?:\s+to|\s+visit|\s+for|\s+with|$)", query, re.IGNORECASE)
+    destination = _extract_destination(query)
+    days = _extract_days(query)
+    budget = _extract_budget(query)
+    origin = _extract_origin(query)
 
-    # Looking for a budget amount with optional currency/commas
-    budget_match = re.search(r"(?:budget(?: of)?|rs\.?|₹)\s*([\d,]+)", query, re.IGNORECASE)
-    if not budget_match:
-        budget_match = re.search(r"(\d{4,})", query) # standalone large number
-
-    destination = dest_match.group(1).strip() if dest_match else "Unknown"
-    days_str = days_match.group(1) if days_match else "3"
-    origin = origin_match.group(1).strip() if origin_match else "DEL"
-
-    try:
-        budget_str = budget_match.group(1).replace(",", "") if budget_match else "50000"
-        budget = float(budget_str)
-    except Exception:
-        budget = 50000.0
-
-    msg = f"Extracted Goal -> Dest: {destination}, Origin: {origin}, Days: {days_str}, Budget: {budget}"
+    msg = f"Extracted Goal -> Dest: {destination}, Origin: {origin}, Days: {days}, Budget: {budget}"
     return {
         "destination": destination,
         "origin": origin,
-        "days": days_str,
+        "days": str(days),
         "budget": budget,
         "messages": [AIMessage(content=msg)]
     }
