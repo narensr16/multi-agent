@@ -6,4 +6,5 @@ langgraph
 tavily-python
 amadeus
 weatherapi
+langchain-groq
 streamlit

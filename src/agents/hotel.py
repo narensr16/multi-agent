@@ -7,12 +7,15 @@ Returns up to 5 clean, properly-named hotel property names.
 
 import os
 import re
+import json
 from dotenv import load_dotenv
 from tavily import TavilyClient
+from langchain_groq import ChatGroq
 
 load_dotenv()
 
 _TAVILY_KEY = os.getenv("TAVILY_API_KEY", "").strip()
+_GROQ_KEY = os.getenv("GROQ_API_KEY", "").strip()
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 _SITE_SUFFIX_RE = re.compile(
@@ -125,13 +128,39 @@ def hotel_agent(state: dict) -> dict:
         # Pass 1 — structured advanced search
         q1 = f"top {tier} hotel names to stay in {destination} India list"
         res1 = client.search(q1, max_results=8, search_depth="advanced")
+        
+        chunks = [res1.get("answer") or ""] + [r.get("content") or "" for r in res1.get("results", [])]
+        combined_text = " ".join(chunks)
 
-        for chunk in [res1.get("answer") or ""] + [r.get("content") or "" for r in res1.get("results", [])]:
-            for name in _extract(chunk):
-                if name not in hotels:
-                    hotels.append(name)
-            if len(hotels) >= 8:
-                break
+        if _GROQ_KEY and _GROQ_KEY != "your_groq_api_key_here":
+            try:
+                llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama3-8b-8192", temperature=0)
+                prompt = (
+                    f"Extract up to 5 real, popular hotels in {destination} from the text below.\n"
+                    f"Return ONLY a raw JSON list of strings containing exactly the clean hotel names.\n"
+                    f'Do not include conversational text, adjectives, or descriptions (e.g. "The Fullerton Hotel", not "German Rhineland inspired The Fullerton Hotel").\n'
+                    f"If no hotels are found, return [].\n\nText: {combined_text}"
+                )
+                res = llm.invoke(prompt)
+                content = res.content.strip()
+                if content.startswith("```json"):
+                    content = content[7:-3]
+                elif content.startswith("```"):
+                    content = content[3:-3]
+                parsed = json.loads(content.strip())
+                if isinstance(parsed, list):
+                    hotels = [str(h).strip() for h in parsed if len(str(h)) > 3]
+            except Exception as e:
+                print(f"Groq parsing failed: {e}")
+
+        # Fallback to Regex if LLM didn't get enough
+        if len(hotels) < 3:
+            for chunk in chunks:
+                for name in _extract(chunk):
+                    if name not in hotels:
+                        hotels.append(name)
+                if len(hotels) >= 8:
+                    break
 
         # Pass 2 — fallback with a broader query
         if len(hotels) < 5:

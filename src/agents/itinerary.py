@@ -8,12 +8,15 @@ Filters out web noise from results.
 
 import os
 import re
+import json
 from dotenv import load_dotenv
 from tavily import TavilyClient
+from langchain_groq import ChatGroq
 
 load_dotenv()
 
 _TAVILY_KEY = os.getenv("TAVILY_API_KEY", "").strip()
+_GROQ_KEY = os.getenv("GROQ_API_KEY", "").strip()
 
 # ── Blocklist: single/partial words that are NOT attraction names ──────────────
 _BLOCKLIST = {
@@ -191,7 +194,29 @@ def itinerary_agent(state: dict) -> dict:
             parts += [_clean(r.get("content") or "") for r in result.get("results") or []]
             combined = " ".join(p for p in parts if p)
 
-            attractions = _extract_attractions(combined, destination)
+            if _GROQ_KEY and _GROQ_KEY != "your_groq_api_key_here":
+                try:
+                    llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama3-8b-8192", temperature=0)
+                    prompt = (
+                        f"Extract up to {days * 3 + 2} real tourist attractions in {destination} from the text below.\n"
+                        f"Return ONLY a raw JSON list of strings containing exactly the clean attraction names.\n"
+                        f"Do not include conversational text, adjectives, or blog titles like 'Why You Should Visit'.\n"
+                        f"If no attractions are found, return [].\n\nText: {combined}"
+                    )
+                    res = llm.invoke(prompt)
+                    content = res.content.strip()
+                    if content.startswith("```json"):
+                        content = content[7:-3]
+                    elif content.startswith("```"):
+                        content = content[3:-3]
+                    parsed = json.loads(content.strip())
+                    if isinstance(parsed, list):
+                        attractions = [str(a).strip() for a in parsed if len(str(a)) > 2]
+                except Exception as e:
+                    print(f"Groq parsing failed: {e}")
+
+            if not attractions:
+                attractions = _extract_attractions(combined, destination)
 
         except Exception:
             pass

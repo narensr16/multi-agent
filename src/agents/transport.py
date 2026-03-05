@@ -7,12 +7,15 @@ Uses strict mode-matching so each transport mode only gets content about that mo
 
 import os
 import re
+import json
 from dotenv import load_dotenv
 from tavily import TavilyClient
+from langchain_groq import ChatGroq
 
 load_dotenv()
 
 _TAVILY_KEY = os.getenv("TAVILY_API_KEY", "").strip()
+_GROQ_KEY = os.getenv("GROQ_API_KEY", "").strip()
 
 # Mode patterns — POSITIVE match for the mode AND NEGATIVE for other modes
 _MODES = {
@@ -101,11 +104,39 @@ def transport_agent(state: dict) -> dict:
 
         # Extract one clean sentence per mode
         lines = []
-        for label, patterns in _MODES.items():
-            text = all_text.get(label, "")
-            sentence = _best_sentence(text, patterns["pos"], patterns["neg"])
-            if sentence:
-                lines.append(f"  {label}: {sentence}")
+
+        if _GROQ_KEY and _GROQ_KEY != "your_groq_api_key_here":
+            try:
+                llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama3-8b-8192", temperature=0)
+                combined_text = "\n".join(f"--- {k} ---\n{v}" for k, v in all_text.items() if v)
+                prompt = (
+                    f"Read the text below and extract exactly one short, objective sentence explaining how to reach {destination} "
+                    f"for each of these modes: By Air, By Train, and By Bus.\n"
+                    f"Do NOT include personal pronouns (I, my, we). Keep it strictly factual.\n"
+                    f"Return ONLY a JSON dictionary where the keys are exactly '✈  By Air   ', '🚆  By Train ', and '🚌  By Bus   ' "
+                    f"and the values are the extracted sentences.\n"
+                    f"If a mode is unavailable, return an empty string for that key.\n\nText: {combined_text}"
+                )
+                res = llm.invoke(prompt)
+                content = res.content.strip()
+                if content.startswith("```json"):
+                    content = content[7:-3]
+                elif content.startswith("```"):
+                    content = content[3:-3]
+                
+                parsed = json.loads(content.strip())
+                for label in _MODES.keys():
+                    if parsed.get(label):
+                        lines.append(f"  {label}: {parsed[label]}")
+            except Exception as e:
+                print(f"Groq parsing failed: {e}")
+
+        if not lines:
+            for label, patterns in _MODES.items():
+                text = all_text.get(label, "")
+                sentence = _best_sentence(text, patterns["pos"], patterns["neg"])
+                if sentence:
+                    lines.append(f"  {label}: {sentence}")
 
         transport_text = "\n".join(lines) if lines else f"  Transport info not available for {destination}."
 
