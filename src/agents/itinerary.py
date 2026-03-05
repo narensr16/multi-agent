@@ -63,7 +63,7 @@ def _extract_attractions(combined: str, destination: str, max_items: int = 18) -
         
         # Strip trailing loose words often caught by Title Case regex
         # e.g., "Rama Fort One", "Tiracol Fort Image", "Visit ... Now"
-        raw = re.sub(r"\s+(One|Of|The|A|An|Image|Picture|Photo|Guide|Tour|Best|Top|Now|There|Here|Visit|View)\b.*$", "", raw, flags=re.IGNORECASE)
+        raw = re.sub(r"\s+(One|Of|The|A|An|Image|Picture|Photo|Guide|Tour|Best|Top|Now|There|Here|Visit|View|Why|You|Should)\b.*$", "", raw, flags=re.IGNORECASE)
         raw = raw.strip()
 
         words = raw.split()

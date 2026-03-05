@@ -56,7 +56,17 @@ _EXTRACT_RE = re.compile(
 
 def _clean(title: str) -> str:
     title = re.sub(r"\s+", " ", title)
-    return _SITE_SUFFIX_RE.sub("", title).strip().strip(",.:").strip()
+    title = _SITE_SUFFIX_RE.sub("", title).strip().strip(",.:").strip()
+    
+    # Strip long descriptive prefixes that are often captured before "The X Hotel"
+    # Example: "German Rhineland inspired The Fullerton Hotel" -> "The Fullerton Hotel"
+    if " The " in title:
+        title = "The " + title.split(" The ", 1)[1]
+    
+    # Remove standalone adjectives at the start
+    title = re.sub(r"^(?:Historic|Famous|Popular|Beautiful|Luxurious|Luxury|Cheap|Budget|Best|Top)\s+", "", title, flags=re.IGNORECASE)
+    
+    return title.strip()
 
 
 def _is_valid(name: str) -> bool:
