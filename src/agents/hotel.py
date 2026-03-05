@@ -134,7 +134,7 @@ def hotel_agent(state: dict) -> dict:
 
         if _GROQ_KEY and _GROQ_KEY != "your_groq_api_key_here":
             try:
-                llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama3-8b-8192", temperature=0)
+                llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
                 prompt = (
                     f"Extract up to 5 real, popular hotels in {destination} from the text below.\n"
                     f"Return ONLY a raw JSON list of strings containing exactly the clean hotel names.\n"

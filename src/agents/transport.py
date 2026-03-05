@@ -107,7 +107,7 @@ def transport_agent(state: dict) -> dict:
 
         if _GROQ_KEY and _GROQ_KEY != "your_groq_api_key_here":
             try:
-                llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama3-8b-8192", temperature=0)
+                llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
                 combined_text = "\n".join(f"--- {k} ---\n{v}" for k, v in all_text.items() if v)
                 prompt = (
                     f"Read the text below and extract exactly one short, objective sentence explaining how to reach {destination} "
