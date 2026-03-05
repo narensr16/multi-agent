@@ -49,7 +49,7 @@ def _clean(text: str) -> str:
         return ""
     text = re.sub(r"https?://\S+", "", text)
     text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
-    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"[\s*]+", " ", text)
     return text.strip()
 
 
@@ -62,8 +62,8 @@ def _extract_attractions(combined: str, destination: str, max_items: int = 18) -
         raw = m.group(1).strip()
         
         # Strip trailing loose words often caught by Title Case regex
-        # e.g., "Rama Fort One", "Tiracol Fort Image"
-        raw = re.sub(r"\s+(One|Of|The|A|An|Image|Picture|Photo|Guide|Tour|Best|Top)\b.*$", "", raw, flags=re.IGNORECASE)
+        # e.g., "Rama Fort One", "Tiracol Fort Image", "Visit ... Now"
+        raw = re.sub(r"\s+(One|Of|The|A|An|Image|Picture|Photo|Guide|Tour|Best|Top|Now|There|Here|Visit|View)\b.*$", "", raw, flags=re.IGNORECASE)
         raw = raw.strip()
 
         words = raw.split()

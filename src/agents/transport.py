@@ -46,7 +46,7 @@ def _clean(text: str) -> str:
     text = re.sub(r"https?://\S+", "", text)
     text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
     text = re.sub(r"\|", " - ", text)  # Replace | with -
-    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"[\s*]+", " ", text)
     return text.strip()
 
 
@@ -55,16 +55,20 @@ def _best_sentence(text: str, pos: re.Pattern, neg: re.Pattern, max_chars: int =
     if not text:
         return ""
     sentences = re.split(r"(?<=[.!?])\s+", text)
+    
+    def is_personal(s):
+        return re.search(r"\b(i|my|we|our|me|you)\b", s, re.IGNORECASE)
+
     for s in sentences:
         s = s.strip()
-        if len(s) < 20:
+        if len(s) < 20 or is_personal(s):
             continue
         if pos.search(s) and not neg.search(s):
             return s[:max_chars] + ("…" if len(s) > max_chars else "")
     # Fallback: accept sentence even if neg matches, just needs pos
     for s in sentences:
         s = s.strip()
-        if len(s) > 20 and pos.search(s):
+        if len(s) > 20 and pos.search(s) and not is_personal(s):
             return s[:max_chars] + ("…" if len(s) > max_chars else "")
     return ""
 

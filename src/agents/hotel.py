@@ -45,7 +45,7 @@ _BRAND_RE = re.compile(
 # Must start with a capital letter and end with a known hotel brand/type word
 _EXTRACT_RE = re.compile(
     r"(?<!\w)([A-Z][A-Za-z&'\-\s]{1,40}"
-    r"(?:Hotel|Resort|Inn|Suites?|Palace|Villa|Lodge|Retreat|Homestay"
+    r"(?:Hotel|Resort|Inn|Suites?|Palace|Villa|Lodge|Retreat|Homestay|Residency|Hostel"
     r"|Hyatt|Marriott|Taj|Oberoi|Radisson|Hilton|Novotel|Lemon Tree"
     r"|Holiday Inn|Ibis|Vivanta|Leela|Trident|Aloft|Westin|Sheraton"
     r"|Planet Hollywood|Caravela|Cidade de Goa|Kenilworth|St Regis"
@@ -55,11 +55,12 @@ _EXTRACT_RE = re.compile(
 
 
 def _clean(title: str) -> str:
+    title = re.sub(r"\s+", " ", title)
     return _SITE_SUFFIX_RE.sub("", title).strip().strip(",.:").strip()
 
 
 def _is_valid(name: str) -> bool:
-    if not name or not (5 <= len(name) <= 80):
+    if not name or not (5 <= len(name) <= 45):
         return False
     # Must NOT be a web-page heading
     if _NOISE_RE.search(name):
@@ -81,7 +82,7 @@ def _extract(text: str) -> list:
     # If we didn't get enough, try a looser fallback that just looks for Title Case sequences
     # ending in any typical hotel-like suffix.
     if len(results) < 5:
-        loose_re = re.compile(r"(?<!\w)([A-Z][A-Za-z&'\-\s]+(?:Hotel|Resort|Inn|Suites?|Palace|Villa|Lodge|Retreat|Homestay))", re.IGNORECASE)
+        loose_re = re.compile(r"(?<!\w)([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3}\s+(?:Hotel|Resort|Inn|Suites?|Palace|Villa|Lodge|Retreat|Homestay))")
         for m in loose_re.finditer(text or ""):
             name = _clean(m.group(1))
             if _is_valid(name) and name not in results:
