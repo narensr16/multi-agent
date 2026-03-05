@@ -198,10 +198,14 @@ def itinerary_agent(state: dict) -> dict:
                 try:
                     llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
                     prompt = (
-                        f"Extract up to {days * 3 + 2} real tourist attractions in {destination} from the text below.\n"
-                        f"Return ONLY a raw JSON list of strings containing exactly the clean attraction names.\n"
-                        f"Do not include conversational text, adjectives, or blog titles like 'Why You Should Visit'.\n"
-                        f"If no attractions are found, return [].\n\nText: {combined}"
+                        f"Extract up to {days * 3 + 2} real, well-known tourist attractions in {destination} from the text below.\n"
+                        f"IMPORTANT RULES:\n"
+                        f"- Include ONLY real tourist landmarks, beaches, parks, museums, buildings, or monuments.\n"
+                        f"- Each name MUST be at least 2 words and at least 8 characters long.\n"
+                        f"- Do NOT include: single words, partial names like 'Fly', '115 marina', action phrases, blog titles, or marketing text.\n"
+                        f"- Good examples: 'Gardens by the Bay', 'Merlion Park', 'Marina Bay Sands', 'Universal Studios Singapore'.\n"
+                        f"- Bad examples: 'Fly', '115 marina', 'Wings of', 'Why You Should'.\n"
+                        f"Return ONLY a raw JSON list of strings. If no valid attractions are found, return [].\n\nText: {combined}"
                     )
                     res = llm.invoke(prompt)
                     content = res.content.strip()
@@ -211,7 +215,9 @@ def itinerary_agent(state: dict) -> dict:
                         content = content[3:-3]
                     parsed = json.loads(content.strip())
                     if isinstance(parsed, list):
-                        attractions = [str(a).strip() for a in parsed if len(str(a)) > 2]
+                        # Additional post-filter: require at least 2 words and 8 chars
+                        attractions = [str(a).strip() for a in parsed
+                                      if len(str(a).strip()) >= 8 and len(str(a).strip().split()) >= 2]
                 except Exception as e:
                     print(f"Groq parsing failed: {e}")
 

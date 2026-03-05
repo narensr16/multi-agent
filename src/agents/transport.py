@@ -110,12 +110,11 @@ def transport_agent(state: dict) -> dict:
                 llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
                 combined_text = "\n".join(f"--- {k} ---\n{v}" for k, v in all_text.items() if v)
                 prompt = (
-                    f"Read the text below and extract exactly one short, objective sentence explaining how to reach {destination} "
-                    f"for each of these modes: By Air, By Train, and By Bus.\n"
-                    f"Do NOT include personal pronouns (I, my, we). Keep it strictly factual.\n"
-                    f"Return ONLY a JSON dictionary where the keys are exactly '✈  By Air   ', '🚆  By Train ', and '🚌  By Bus   ' "
-                    f"and the values are the extracted sentences.\n"
-                    f"If a mode is unavailable, return an empty string for that key.\n\nText: {combined_text}"
+                    f"Read the text below and extract exactly one short, objective, factual sentence for each transport mode to reach {destination}.\n"
+                    f"Do NOT use personal pronouns (I, my, we, our).\n"
+                    f"Return ONLY a JSON dictionary with exactly these 3 keys: 'air', 'train', 'bus'.\n"
+                    f"Example: {{\"air\": \"Singapore Changi Airport (SIN) serves international flights.\", \"train\": \"...\", \"bus\": \"...\"}}.\n"
+                    f"If a mode is not mentioned, use an empty string for that key.\n\nText: {combined_text}"
                 )
                 res = llm.invoke(prompt)
                 content = res.content.strip()
@@ -125,9 +124,15 @@ def transport_agent(state: dict) -> dict:
                     content = content[3:-3]
                 
                 parsed = json.loads(content.strip())
-                for label in _MODES.keys():
-                    if parsed.get(label):
-                        lines.append(f"  {label}: {parsed[label]}")
+                key_map = {
+                    "air":   "✈  By Air   ",
+                    "train": "🚆  By Train ",
+                    "bus":   "🚌  By Bus   ",
+                }
+                for short_key, label in key_map.items():
+                    sentence = parsed.get(short_key, "").strip()
+                    if sentence:
+                        lines.append(f"  {label}: {sentence}")
             except Exception as e:
                 print(f"Groq parsing failed: {e}")
 

@@ -21,6 +21,7 @@ CITY_TO_IATA = {
     "mumbai":     "BOM",
     "delhi":      "DEL",
     "bangalore":  "BLR",
+    "bengaluru":  "BLR",
     "hyderabad":  "HYD",
     "chennai":    "MAA",
     "kolkata":    "CCU",
@@ -28,7 +29,7 @@ CITY_TO_IATA = {
     "ahmedabad":  "AMD",
     "jaipur":     "JAI",
     "kochi":      "COK",
-    "manali":     "KUU",   # Kullu-Manali airport
+    "manali":     "KUU",
     "shimla":     "SLV",
     "varanasi":   "VNS",
     "agra":       "AGR",
@@ -50,6 +51,22 @@ CITY_TO_IATA = {
     "darjeeling": "IXB",
     "kerala":     "COK",
     "ooty":       "CJB",
+    # International Cities
+    "singapore":  "SIN",
+    "dubai":      "DXB",
+    "bangkok":    "BKK",
+    "kuala lumpur": "KUL",
+    "london":     "LHR",
+    "new york":   "JFK",
+    "paris":      "CDG",
+    "tokyo":      "NRT",
+    "sydney":     "SYD",
+    "bali":       "DPS",
+    "hong kong":  "HKG",
+    "colombo":    "CMB",
+    "kathmandu":  "KTM",
+    "dhaka":      "DAC",
+    "karachi":    "KHI",
 }
 
 # Nearest airport when destination is not directly served
