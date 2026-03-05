@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import sys
+import re
 
 # Ensure the 'src' directory is in the import path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
@@ -37,9 +38,56 @@ with st.form("travel_form"):
 
 st.markdown("---")
 
+
+def _render_plan(plan: str):
+    """Render the travel plan intelligently — map links are clickable HTML."""
+    # Split on the MAP section header
+    map_sep = "🗺  MAP"
+    cost_sep = "💰  ESTIMATED COST"
+
+    before_map, _, rest = plan.partition(map_sep)
+
+    # Display everything before the MAP section
+    st.text(before_map)
+
+    if rest:
+        # Display MAP section header
+        st.markdown("### 🗺  MAP")
+        st.markdown("---")
+
+        # Split off the cost section that comes after MAP
+        map_part, _, after_map = rest.partition(cost_sep)
+
+        # Convert raw URLs in the map block to clickable markdown links
+        def _linkify(line: str) -> str:
+            # Replace "name → https://url" with "name → [maps](url)"
+            m = re.match(r"(\s*[∙•]\s*)(.*?)\s*→\s*(https?://\S+)", line)
+            if m:
+                prefix, name, url = m.group(1), m.group(2), m.group(3)
+                return f"{prefix}**{name}** → [Open in Maps 📍]({url})"
+            # Replace plain "🔗 View on Google Maps: https://..." line
+            m2 = re.match(r"(\s*🔗.*?:\s*)(https?://\S+)", line)
+            if m2:
+                label, url = m2.group(1), m2.group(2)
+                return f"{label}[**Click to Open Maps 🗺**]({url})"
+            return line
+
+        map_lines = map_part.split("\n")
+        rendered = "\n".join(_linkify(l) for l in map_lines)
+        st.markdown(rendered)
+        st.markdown("---")
+
+        # Display the rest (cost section onwards)
+        if after_map:
+            st.text(cost_sep + after_map)
+    else:
+        # No map section — just display everything
+        st.text(plan)
+
+
 if submit and user_query:
     st.info("⏳ Planning your trip... This may take up to 30 seconds.")
-    
+
     initial_state = {
         "user_query": user_query,
         "messages":   [],
@@ -53,6 +101,8 @@ if submit and user_query:
         "itinerary":   None,
         "flights":     None,
         "estimated_cost": None,
+        "map_url":     None,
+        "map_places":  None,
         "final_response": None,
     }
 
@@ -60,12 +110,11 @@ if submit and user_query:
         # Run the workflow
         final_state = st.session_state.app.invoke(initial_state)
         plan = final_state.get("final_response", "")
-        
+
         if plan:
-            # Display successful plan visually
             st.success("✅ Your AI-generated travel plan is ready!")
-            st.text_area("Your Travel Plan", value=plan, height=800, label_visibility="collapsed")
-            
+            _render_plan(plan)
+
             # Allow downloading
             dest = final_state.get("destination", "Unknown").replace(" ", "_")
             st.download_button(
@@ -76,7 +125,7 @@ if submit and user_query:
             )
         else:
             st.error("⚠️ Could not generate a complete plan. Please try modifying your request.")
-            
+
     except Exception as e:
         st.error(f"❌ An error occurred during planning: {str(e)}")
         st.write("Please check your API keys and try again.")
@@ -88,6 +137,8 @@ with st.sidebar:
         "This AI Agent uses:\n"
         "- **LangGraph** for multi-agent reasoning\n"
         "- **Tavily** for live web searches (hotels, attractions)\n"
+        "- **Groq Llama-3** for intelligent LLM parsing\n"
         "- **Amadeus** for actual flight prices\n"
-        "- **WeatherAPI** for local forecasts"
+        "- **WeatherAPI** for live forecasts & 3-day outlook\n"
+        "- **Google Maps** links for all attractions"
     )
