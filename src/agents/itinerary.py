@@ -193,26 +193,31 @@ def _get_time_fee(place: str, destination: str) -> str:
     except ValueError:
         return f"(⏱ {time_est} | 🎟 {base_inr_fee_str})"
 
-    # Detect region currency
+    # Detect region currency and cost index
     region = _detect_region(destination)
     cfg    = _REGION_CONFIG[region]
 
     if cfg["currency"] == "INR":
         return f"(⏱ {time_est} | 🎟 ~₹{base_inr})"
 
-    # Convert the base INR fee into local currency
+    # Scale the Indian base fee by the region's relative cost of living.
+    # We use the food_day cost as a relative index (India food_day = ₹600).
+    # local_fee = (base_inr * local_food_day) / india_food_day
+    local_fee_amount = (base_inr * cfg["food_day"]) / 600
+    
     rate = cfg["inr_rate"]
-    local_fee = base_inr / rate
+    scaled_inr = round(local_fee_amount * rate)
 
-    # Format nicely (e.g., €2, $5, AED 15, ¥500)
+    # Format nicely (e.g., €18, $20, AED 33, ¥1300)
     if cfg["currency"] in ("JPY", "KRW"):
-        local_fee_str = f"{cfg['symbol']}{int(local_fee)}"
-    elif local_fee < 10:
-        local_fee_str = f"{cfg['symbol']}{local_fee:.1f}".replace(".0", "")
+        # Round to nearest 100 for large currencies
+        rounded_local = round(local_fee_amount / 100) * 100
+        local_fee_str = f"{cfg['symbol']}{int(rounded_local)}"
     else:
-        local_fee_str = f"{cfg['symbol']}{int(local_fee)}"
+        # Round to nearest whole number for Euros, USD, GBP, etc.
+        local_fee_str = f"{cfg['symbol']}{round(local_fee_amount)}"
 
-    return f"(⏱ {time_est} | 🎟 ~{local_fee_str} (₹{base_inr}))"
+    return f"(⏱ {time_est} | 🎟 ~{local_fee_str} (₹{scaled_inr}))"
 
 
 def _build_itinerary(attractions: list, days: int, destination: str) -> str:
