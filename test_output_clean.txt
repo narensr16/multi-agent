@@ -1,0 +1,75 @@
+
+========================================================
+🌍  AI TRAVEL PLAN (v2.1 DEBUG)
+=================
+
+  Destination    : Singapore
+  Duration       : 3 day(s)
+  Budget         : ₹30,000
+
+--------------------------------------------------------
+  🌤  WEATHER
+--------------------------------------------------------
+  Temperature : 28.1°C
+Condition : Partly cloudy
+
+  📆 3-Day Forecast
+  Fri 06 Mar : 🌧️ 29.8°C / 24.9°C — Patchy rain nearby
+  Sat 07 Mar : 🌧️ 28.0°C / 24.9°C — Moderate rain
+  Sun 08 Mar : 🌧️ 30.1°C / 25.3°C — Patchy rain nearby
+
+--------------------------------------------------------
+  🏨  HOTELS
+--------------------------------------------------------
+  • Singapore Grand Hotel
+  • Singapore Central Resort
+  • The Singapore Inn
+
+--------------------------------------------------------
+  🚗  TRANSPORT OPTIONS
+--------------------------------------------------------
+By Air : Singapore Changi Airport (SIN)
+
+--------------------------------------------------------
+  ✈  FLIGHTS (Live via Amadeus)
+--------------------------------------------------------
+BLR → SIN
+Airline : UL
+Duration : 8h 40m
+Price : ₹13,523
+
+--------------------------------------------------------
+  🗓  DAY-BY-DAY ITINERARY
+--------------------------------------------------------
+Day 1
+Marina Bay Sands
+Gardens by the Bay
+
+Day 2
+Merlion
+Sentosa Island
+Universal Studios
+
+Day 3
+Cloud Garden
+Skypark Observation deck
+Singapore National Orchid Garden
+
+--------------------------------------------------------
+  🗺  MAP
+--------------------------------------------------------
+  🔗 View on Google Maps: https://maps.google.com/maps?q=tourist%20attractions%20in%20Singapore
+
+--------------------------------------------------------
+  💰  ESTIMATED COST
+--------------------------------------------------------
+  Cost Region      : 🌏 SE Asia Premium (USD)
+  Exchange Rate    : 1 USD ≈ ₹84.0
+  Accommodation     : ₹25,200.00  ($300.00 (3 days × $100))
+  Flight (Amadeus)  : ₹13,523.00  (₹13,523)
+  Food              : ₹4,499.88  ($53.57 (USD))
+  Misc / Activities : ₹2,999.64  ($35.71 (USD))
+  ------------------------------------------
+  TOTAL             : ₹46,222.52
+  Exceeds budget ⚠️
+========================================================

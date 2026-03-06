@@ -19,8 +19,63 @@ Currency conversion rates (approximate, Mar 2026):
 
 Writes: estimated_cost (dict with itemised breakdown + total in INR)
 """
-
+import requests
+import json
+import os
 import re
+
+from dotenv import load_dotenv
+
+load_dotenv()
+_GROQ_KEY = os.getenv("GROQ_API_KEY", "").strip()
+
+def detect_country_and_currency(destination: str) -> tuple[str, str, str]:
+    dest_lower = destination.lower()
+    if "goa" in dest_lower or "india" in dest_lower or "bangalore" in dest_lower:
+        return "India", "INR", "₹"
+    if "singapore" in dest_lower:
+        return "Singapore", "SGD", "$"
+    if "paris" in dest_lower or "france" in dest_lower:
+        return "France", "EUR", "€"
+    if "tokyo" in dest_lower or "japan" in dest_lower:
+        return "Japan", "JPY", "¥"
+    if "bangkok" in dest_lower or "thailand" in dest_lower:
+        return "Thailand", "THB", "฿"
+
+    if _GROQ_KEY and _GROQ_KEY != "your_groq_api_key_here":
+        try:
+            from langchain_groq import ChatGroq
+            llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
+            prompt = f"What is the country, 3-letter ISO currency code, and currency symbol for the travel destination '{destination}'? Return only a raw JSON: {{\"country\": \"...\", \"code\": \"...\", \"symbol\": \"...\"}} without quotes or markdown."
+            res = llm.invoke(prompt)
+            content = res.content.strip()
+            if content.startswith("```json"): content = content[7:-3]
+            elif content.startswith("```"): content = content[3:-3]
+            parsed = json.loads(content.strip())
+            return parsed.get("country", "India"), parsed.get("code", "INR").upper(), parsed.get("symbol", "₹")
+        except Exception:
+            pass
+    return "India", "INR", "₹"
+
+def get_exchange_rate_to_inr(currency_code: str) -> float:
+    code = currency_code.upper()
+    if code == "INR": return 1.0
+        
+    try:
+        url = "https://open.er-api.com/v6/latest/INR"
+        resp = requests.get(url, timeout=5)
+        if resp.status_code == 200:
+            data = resp.json()
+            rate = data.get("rates", {}).get(code)
+            if rate: return 1.0 / float(rate)
+    except Exception:
+        pass
+        
+    fallbacks = {
+        "USD": 84.0, "EUR": 90.0, "GBP": 107.0, "SGD": 62.0, "JPY": 0.56,
+        "AED": 23.0, "THB": 2.5, "MYR": 19.0, "AUD": 55.0, "IDR": 0.0053
+    }
+    return fallbacks.get(code, 84.0)
 
 # ── Currency configs per region ────────────────────────────────────────────────
 # Each entry:
@@ -184,32 +239,52 @@ def budget_agent(state: dict) -> dict:
     sym     = cfg["symbol"]
     cur     = cfg["currency"]
 
-    # ── Hotel: budget-proportional but capped at cfg baseline ─────────────────
-    # Convert budget to local currency
+    # ── Hotel: Use Dynamic Tavily String (hotel_price_raw)  ──
+    
+    hotel_raw = state.get("hotel_price_raw") or ""
+    nums = re.findall(r"[\d,]+(?:\.\d+)?", hotel_raw)
+    
     budget_local = budget_inr / rate
 
-    # Hotel cap: min of budget-driven (25%/days) and cfg baseline
-    per_night_local = min(budget_local * 0.25 / days, cfg["hotel_night"])
-    # For non-India: floor at 40% of regional baseline (can't show ₹100/night in Paris)
-    if region != "india":
-        per_night_local = max(per_night_local, cfg["hotel_night"] * 0.4)
-
-    hotel_local = round(per_night_local * days, 2)
-    hotel_inr   = round(hotel_local * rate)
+    if nums:
+        scraped_night_local = float(nums[0].replace(",", ""))
+        
+        # If the scraped string explicitly has USD (even for Singapore), treat as USD converting to INR
+        if ("usd" in hotel_raw.lower() or "us$" in hotel_raw.lower() or 
+            ("$" in hotel_raw and cur != "SGD" and cur != "AUD")):
+            usd_rate = _REGION_CONFIG["usa_canada"]["inr_rate"] # usually 84
+            hotel_inr_night = scraped_night_local * usd_rate
+            hotel_local_night = hotel_inr_night / rate # what it represents in region's native currency
+        else:
+            hotel_local_night = scraped_night_local
+            hotel_inr_night = hotel_local_night * rate
+            
+        hotel_local = round(hotel_local_night * days, 2)
+        hotel_inr = round(hotel_inr_night * days, 2)
+        hotel_display_per_night = hotel_raw
+    else:
+        # Fallback to cfg baseline calculation if scraped pricing fails
+        per_night_local = min(budget_local * 0.25 / days, cfg["hotel_night"])
+        if region != "india":
+            per_night_local = max(per_night_local, cfg["hotel_night"] * 0.4)
+            
+        hotel_local = round(per_night_local * days, 2)
+        hotel_inr   = round(hotel_local * rate, 2)
+        hotel_display_per_night = f"Est. {sym}{per_night_local:,.2f}"
 
     # ── Food ─────────────────────────────────────────────────────────────────
-    food_day_local = min(budget_local * 0.15 / days, cfg["food_day"])
+    food_day_local = min((budget_inr / rate) * 0.15 / days, cfg["food_day"])
     if region != "india":
         food_day_local = max(food_day_local, cfg["food_day"] * 0.4)
     food_local = round(food_day_local * days, 2)
-    food_inr   = round(food_local * rate)
+    food_inr   = round(food_local * rate, 2)
 
     # ── Misc / Activities ────────────────────────────────────────────────────
     misc_day_local = min(budget_local * 0.10 / days, cfg["misc_day"])
     if region != "india":
         misc_day_local = max(misc_day_local, cfg["misc_day"] * 0.3)
     misc_local = round(misc_day_local * days, 2)
-    misc_inr   = round(misc_local * rate)
+    misc_inr   = round(misc_local * rate, 2)
 
     # ── Transport (flight) ───────────────────────────────────────────────────
     flight_inr_live = _parse_cheapest_flight_inr(state.get("flights") or "")
@@ -221,23 +296,23 @@ def budget_agent(state: dict) -> dict:
     else:
         # Use region-appropriate flight estimate (in local currency → INR)
         transport_local = cfg["flight_est"]
-        transport_inr   = round(transport_local * rate)
+        transport_inr   = round(transport_local * rate, 2)
         transport_label = f"Est. Flight ({cur})"
-        transport_local_str = f"{sym}{transport_local:,.0f} ≈ ₹{int(transport_inr):,}"
+        transport_local_str = f"{sym}{transport_local:,.2f} ≈ ₹{transport_inr:,.2f}"
 
-    total_inr = hotel_inr + transport_inr + food_inr + misc_inr
+    total_inr = round(hotel_inr + transport_inr + food_inr + misc_inr, 2)
 
     return {
         "estimated_cost": {
             "hotel_cost":         hotel_inr,
-            "hotel_local":        f"{sym}{hotel_local:,.0f} ({cur})",
+            "hotel_local":        f"{sym}{hotel_local:,.2f} ({days} days × {hotel_display_per_night})",
             "transport_cost":     transport_inr,
             "transport_label":    transport_label,
             "transport_local":    transport_local_str,
             "food_cost":          food_inr,
-            "food_local":         f"{sym}{food_local:,.0f} ({cur})",
+            "food_local":         f"{sym}{food_local:,.2f} ({cur})",
             "misc_cost":          misc_inr,
-            "misc_local":         f"{sym}{misc_local:,.0f} ({cur})",
+            "misc_local":         f"{sym}{misc_local:,.2f} ({cur})",
             "total":              total_inr,
             "region":             _REGION_LABELS.get(region, region),
             "currency":           cur,

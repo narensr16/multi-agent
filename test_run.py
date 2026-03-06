@@ -8,7 +8,7 @@ from graph import build_graph
 app = build_graph()
 
 initial_state = {
-    'user_query': 'I want to visit Kodaikanal for 3 days with 30000 budget',
+    'user_query': 'I want to go a 3-day trip from bangalore to singapore budget is 30000',
     'messages':   [],
     'destination': None,
     'days':        None,
@@ -21,9 +21,8 @@ initial_state = {
 }
 
 final = app.invoke(initial_state)
-print('\n=== FINAL STATE KEYS ===')
-for k, v in final.items():
-    if k != 'messages':
-        print(f'{k}: {str(v)[:120]}')
-print('\n=== FINAL RESPONSE ===')
-print(final.get('final_response', 'NO RESPONSE'))
+print('\n=== FINAL RESPONSE ===\n')
+import sys
+with open('test_output_clean.txt', 'w', encoding='utf-8') as f:
+    f.write(final.get('final_response', 'NO RESPONSE'))
+print("Wrote output to test_output_clean.txt")

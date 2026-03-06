@@ -1,0 +1,106 @@
+﻿python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python test_run.py > 
+error.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Traceback (mo   
+ st recent call las    
+t)::String) [], Re    
+moteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+  File "C:\agent_projec
+t\travel_agents_project
+\test_run.py", line 
+23, in <module>
+    final = app.invoke(
+initial_state)
+            ^^^^^^^^^^^
+^^^^^^^^^^^^^^
+  File "C:\Users\admin\
+AppData\Local\Programs\
+Python\Python312\Lib\si
+te-packages\langgraph\p
+regel\main.py", line 
+3094, in invoke
+    for chunk in 
+self.stream(
+  File "C:\Users\admin\
+AppData\Local\Programs\
+Python\Python312\Lib\si
+te-packages\langgraph\p
+regel\main.py", line 
+2669, in stream
+    for _ in 
+runner.tick(
+  File "C:\Users\admin\
+AppData\Local\Programs\
+Python\Python312\Lib\si
+te-packages\langgraph\p
+regel\_runner.py", 
+line 167, in tick
+    run_with_retry(
+  File "C:\Users\admin\
+AppData\Local\Programs\
+Python\Python312\Lib\si
+te-packages\langgraph\p
+regel\_retry.py", line 
+71, in run_with_retry
+    return task.proc.in
+voke(task.input, 
+config)
+           ^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^
+  File "C:\Users\admin\
+AppData\Local\Programs\
+Python\Python312\Lib\si
+te-packages\langgraph\_
+internal\_runnable.py",
+ line 656, in invoke
+    input = context.run
+(step.invoke, input, 
+config, **kwargs)
+            ^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
+  File "C:\Users\admin\
+AppData\Local\Programs\
+Python\Python312\Lib\si
+te-packages\langgraph\_
+internal\_runnable.py",
+ line 400, in invoke
+    ret = 
+self.func(*args, 
+**kwargs)
+          ^^^^^^^^^^^^^
+^^^^^^^^^^^^^
+  File "C:\agent_projec
+t\travel_agents_project
+\src\agents\budget.py",
+ line 262, in 
+budget_agent
+    hotel_local_str = 
+f"{days} nights ╫ 
+{hotel_raw} = {sym}{hot
+el_local:,.0f}"
+                       
+                       
+              
+^^^^^^^^^^^
+UnboundLocalError: 
+cannot access local 
+variable 'hotel_local' 
+where it is not 
+associated with a value
+During task with name 
+'budget_agent' and id '
+adcd6d6a-53d6-87fd-ad3a
+-bf2b8d8df92b'

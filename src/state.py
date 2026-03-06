@@ -11,7 +11,6 @@ Design rules:
 from typing import Annotated, Any, List, Optional, TypedDict
 import operator
 
-
 class AgentState(TypedDict):
     # Initial input
     user_query: str
@@ -22,18 +21,21 @@ class AgentState(TypedDict):
     days: Optional[str]
     budget: Optional[float]
 
-    # Worker-agent outputs (each agent writes exactly one of these)
+    # Worker-agent outputs
     weather: Optional[str]
-    hotels: Optional[str]
+    hotels: Optional[list]
+    hotel_price_raw: Optional[str]
+    hotel_price_inr: Optional[float]
     transport: Optional[str]
     itinerary: Optional[str]
     flights: Optional[str]
-    estimated_cost: Optional[str]
+    estimated_cost: Optional[dict]
+    activities_cost: Optional[float]
     map_url: Optional[str]
     map_places: Optional[list]
 
-    # Final assembled response (written ONLY by supervisor_final)
+    # Final assembled response
     final_response: Optional[str]
 
-    # Conversation log — uses Annotated so multiple nodes can append safely
+    # Conversation log
     messages: Annotated[List[Any], operator.add]

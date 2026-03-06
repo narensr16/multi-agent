@@ -195,12 +195,12 @@ def supervisor_final(state: AgentState) -> dict:
         cost_block = (
             f"{region_note}"
             f"{rate_note}"
-            f"  {'Accommodation':<18}: ₹{hotel_cost:>8,.0f}{_local(hotel_local)}\n"
-            f"  {transport_label:<18}: ₹{transport_cost:>8,.0f}{_local(transport_local)}\n"
-            f"  {'Food':<18}: ₹{food_cost:>8,.0f}{_local(food_local)}\n"
-            f"  {'Misc / Activities':<18}: ₹{misc_cost:>8,.0f}{_local(misc_local)}\n"
+            f"  {'Accommodation':<18}: ₹{hotel_cost:>8,.2f}{_local(hotel_local)}\n"
+            f"  {transport_label:<18}: ₹{transport_cost:>8,.2f}{_local(transport_local)}\n"
+            f"  {'Food':<18}: ₹{food_cost:>8,.2f}{_local(food_local)}\n"
+            f"  {'Misc / Activities':<18}: ₹{misc_cost:>8,.2f}{_local(misc_local)}\n"
             f"  {'-' * 42}\n"
-            f"  {'TOTAL':<18}: ₹{total:>8,.0f}\n"
+            f"  {'TOTAL':<18}: ₹{total:>8,.2f}\n"
             f"  {verdict}"
         )
     else:

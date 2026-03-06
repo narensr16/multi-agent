@@ -51,10 +51,8 @@ def _fetch_from_weatherapi(destination: str) -> str | None:
         wind      = current.get("wind_kph", "N/A")
 
         return (
-            f"Temperature : {temp}°C  (feels like {feels}°C)\n"
-            f"  Condition   : {condition}\n"
-            f"  Humidity    : {humidity}%\n"
-            f"  Wind        : {wind} km/h"
+            f"Temperature : {temp}°C\n"
+            f"Condition : {condition}"
         )
 
     except Exception:
@@ -151,9 +149,7 @@ def _fetch_from_tavily(destination: str) -> str:
             cond   = cond_match.group(1).title() if cond_match else "Check local forecast"
             return (
                 f"Temperature : {temp}°C\n"
-                f"  Condition   : {cond}\n"
-                f"  Humidity    : {humid}\n"
-                f"  Source      : Live web search"
+                f"Condition : {cond}"
             )
 
         # Last resort: return first two clean sentences from snippet

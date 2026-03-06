@@ -349,31 +349,22 @@ def flight_agent(state: dict) -> dict:
         offers.sort(key=lambda o: float(o["price"]["grandTotal"]))
         top3 = offers[:3]
 
-        # Build display labels: "Coimbatore (CJB)" style
-        def _city_label(name: str, iata: str) -> str:
-            if name and name.lower() not in ("del", "bom", ""):
-                return f"{name.title()} ({iata})"
-            return iata
-
-        origin_label = _city_label(origin_name, origin_iata)
-        dest_label   = _city_label(destination, dest_iata)
-        lines = [f"  (Results shown for {origin_label} → {dest_label}, {depart_date})\n"]
+        
+        lines = []
         for i, offer in enumerate(top3, 1):
+            if i > 1: break
             seg      = offer["itineraries"][0]["segments"][0]
             carrier  = seg["carrierCode"]
             airline  = AIRLINE_NAMES.get(carrier, carrier)
-            departs  = seg["departure"]["at"][11:16]           # HH:MM
-            arrives  = seg["arrival"]["at"][11:16]
             duration = _format_duration(offer["itineraries"][0]["duration"])
             price    = float(offer["price"]["grandTotal"])
-            tag      = " ✅ Within budget" if price <= budget else " ⚠️ Exceeds budget"
 
-            lines.append(
-                f"  {i}. {airline} ({carrier})  |  {departs} → {arrives}"
-                f"  |  Duration: {duration}  |  💰 ₹{price:,.0f}{tag}"
-            )
+            lines.append(f"{origin_iata} → {dest_iata}")
+            lines.append(f"Airline : {airline}")
+            lines.append(f"Duration : {duration}")
+            lines.append(f"Price : ₹{int(price):,}")
 
         return {"flights": "\n".join(lines)}
 
     except Exception as e:
-        return {"flights": f"  Flight search failed: {e}"}
+        return {"flights": f"Flight search failed: {e}"}
