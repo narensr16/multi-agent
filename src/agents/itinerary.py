@@ -170,8 +170,8 @@ _CATEGORY_DEFAULTS = [
 # We will import region detection from budget.py to fetch currency details
 from .budget import _detect_region, _REGION_CONFIG
 
-def _get_time_fee(place: str, destination: str) -> str:
-    """Return formatted '(⏱ ~2 hrs | 🎟 €2 (₹180))' string for a given place based on local currency."""
+def _get_time_and_fallback_fee(place: str, destination: str) -> tuple[str, str]:
+    """Return (time_estimate, fallback_local_fee_str) for a given place based on local currency if scraping fails."""
     pl = place.lower()
     base_inr_fee_str = "Varies"
     time_est = "~2 hrs"
@@ -185,39 +185,32 @@ def _get_time_fee(place: str, destination: str) -> str:
 
     # If it's "Free" or "Varies", just return it
     if base_inr_fee_str in ("Free", "Varies"):
-        return f"(⏱ {time_est} | 🎟 {base_inr_fee_str})"
+        return time_est, base_inr_fee_str
 
-    # Otherwise, it's something like "~₹200". Extract the number.
     try:
         base_inr = int(re.sub(r"\D", "", base_inr_fee_str))
     except ValueError:
-        return f"(⏱ {time_est} | 🎟 {base_inr_fee_str})"
+        return time_est, base_inr_fee_str
 
     # Detect region currency and cost index
     region = _detect_region(destination)
     cfg    = _REGION_CONFIG[region]
 
     if cfg["currency"] == "INR":
-        return f"(⏱ {time_est} | 🎟 ~₹{base_inr})"
+        return time_est, f"~₹{base_inr}"
 
     # Scale the Indian base fee by the region's relative cost of living.
-    # We use the food_day cost as a relative index (India food_day = ₹600).
-    # local_fee = (base_inr * local_food_day) / india_food_day
     local_fee_amount = (base_inr * cfg["food_day"]) / 600
-    
     rate = cfg["inr_rate"]
     scaled_inr = round(local_fee_amount * rate)
 
-    # Format nicely (e.g., €18, $20, AED 33, ¥1300)
     if cfg["currency"] in ("JPY", "KRW"):
-        # Round to nearest 100 for large currencies
         rounded_local = round(local_fee_amount / 100) * 100
         local_fee_str = f"{cfg['symbol']}{int(rounded_local)}"
     else:
-        # Round to nearest whole number for Euros, USD, GBP, etc.
         local_fee_str = f"{cfg['symbol']}{round(local_fee_amount)}"
 
-    return f"(⏱ {time_est} | 🎟 ~{local_fee_str} (₹{scaled_inr}))"
+    return time_est, f"~{local_fee_str} (₹{scaled_inr})"
 
 
 def _build_itinerary(attractions: list, days: int, destination: str) -> str:
@@ -230,36 +223,42 @@ def _build_itinerary(attractions: list, days: int, destination: str) -> str:
         lines.append(f"\n  📅 Day {d}")
         lines.append(f"  {'─' * 40}")
 
+        # Helper to format a single attraction dict
+        def format_visit(item):
+            place = item["name"]
+            scraped_fee = item.get("fee", "Unknown")
+            time_est, fallback_fee = _get_time_and_fallback_fee(place, destination)
+            
+            # Use scraped fee if valid, else fallback
+            if scraped_fee and scraped_fee.lower() not in ["unknown", "varies", "n/a", "none"]:
+                tf = f"(⏱ {time_est} | 🎟 {scraped_fee})"
+            else:
+                tf = f"(⏱ {time_est} | 🎟 {fallback_fee})"
+            return f"Visit {place}  {tf}"
+
         if d == 1:
             lines.append(f"     {slots[0]}: Arrive in {destination}, check-in & freshen up")
-            # 2 activities for day 1
             day_items = attractions[idx: idx + 2]
             idx += 2
-            for i, place in enumerate(day_items):
-                tf = _get_time_fee(place, destination)
-                lines.append(f"     {slots[i + 1]}: Visit {place}  {tf}")
+            for i, item in enumerate(day_items):
+                lines.append(f"     {slots[i + 1]}: {format_visit(item)}")
             if len(day_items) < 2:
                 lines.append(f"     {slots[2]}: Relax and explore local area")
 
         elif d == days:
-            # 2 activities for last day
             day_items = attractions[idx: idx + 2] if idx < n else []
             idx += 2
-            for i, place in enumerate(day_items):
-                tf = _get_time_fee(place, destination)
-                lines.append(f"     {slots[i]}: Visit {place}  {tf}")
+            for i, item in enumerate(day_items):
+                lines.append(f"     {slots[i]}: {format_visit(item)}")
             if len(day_items) < 2:
                 lines.append(f"     {slots[1]}: Rest and explore surroundings")
             lines.append(f"     {slots[2]}: Pack up and depart from {destination}")
 
         else:
-            # 3 activities for middle days
             day_items = attractions[idx: idx + 3] if idx < n else []
             idx += 3
-            for i, place in enumerate(day_items):
-                tf = _get_time_fee(place, destination)
-                lines.append(f"     {slots[i]}: Visit {place}  {tf}")
-            # Pad missing slots
+            for i, item in enumerate(day_items):
+                lines.append(f"     {slots[i]}: {format_visit(item)}")
             for i in range(len(day_items), 3):
                 filler = ["Explore local markets", "Relax at a café", "Local dinner & leisure"][i % 3]
                 lines.append(f"     {slots[i]}: {filler}")
@@ -280,8 +279,8 @@ def itinerary_agent(state: dict) -> dict:
         try:
             client = TavilyClient(api_key=_TAVILY_KEY)
             query  = (
-                f"top tourist attractions places to visit in {destination} India "
-                f"beaches forts temples nature sightseeing must see"
+                f"top tourist attractions places to visit in {destination} "
+                f"entrance fees ticket prices 2026 sightseeing must see"
             )
             result = client.search(query, max_results=6, search_depth="advanced")
 
@@ -294,13 +293,15 @@ def itinerary_agent(state: dict) -> dict:
                     llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
                     prompt = (
                         f"Extract up to {days * 3 + 2} real, well-known tourist attractions in {destination} from the text below.\n"
+                        f"Also extract the exact entrance fee or ticket price for each attraction if mentioned.\n"
                         f"IMPORTANT RULES:\n"
                         f"- Include ONLY real tourist landmarks, beaches, parks, museums, buildings, or monuments.\n"
                         f"- Each name MUST be at least 2 words and at least 8 characters long.\n"
-                        f"- Do NOT include: single words, partial names like 'Fly', '115 marina', action phrases, blog titles, or marketing text.\n"
-                        f"- Good examples: 'Gardens by the Bay', 'Merlion Park', 'Marina Bay Sands', 'Universal Studios Singapore'.\n"
-                        f"- Bad examples: 'Fly', '115 marina', 'Wings of', 'Why You Should'.\n"
-                        f"Return ONLY a raw JSON list of strings. If no valid attractions are found, return [].\n\nText: {combined}"
+                        f"- Do NOT include: single words, partial names like 'Fly', action phrases, blog titles, or marketing text.\n"
+                        f"- If the price is not mentioned, use 'Unknown'. If it is free, use 'Free'.\n"
+                        f"Return ONLY a raw JSON list of objects with keys 'name' and 'fee'. If no valid attractions are found, return [].\n"
+                        f"Example: [{{\"name\": \"La Sagrada Família\", \"fee\": \"€26\"}}, {{\"name\": \"Park Güell\", \"fee\": \"€10\"}}]\n\n"
+                        f"Text: {combined}"
                     )
                     res = llm.invoke(prompt)
                     content = res.content.strip()
@@ -310,14 +311,17 @@ def itinerary_agent(state: dict) -> dict:
                         content = content[3:-3]
                     parsed = json.loads(content.strip())
                     if isinstance(parsed, list):
-                        # Additional post-filter: require at least 2 words and 8 chars
-                        attractions = [str(a).strip() for a in parsed
-                                      if len(str(a).strip()) >= 8 and len(str(a).strip().split()) >= 2]
+                        for a in parsed:
+                            name = str(a.get("name", "")).strip()
+                            fee = str(a.get("fee", "Unknown")).strip()
+                            if len(name) >= 8 and len(name.split()) >= 2:
+                                attractions.append({"name": name, "fee": fee})
                 except Exception as e:
                     print(f"Groq parsing failed: {e}")
 
             if not attractions:
-                attractions = _extract_attractions(combined, destination)
+                strs = _extract_attractions(combined, destination)
+                attractions = [{"name": s, "fee": "Unknown"} for s in strs]
 
         except Exception:
             pass
@@ -325,9 +329,10 @@ def itinerary_agent(state: dict) -> dict:
     # Use curated fallback if extraction failed or yielded too little
     if len(attractions) < days * 2:
         fb = _FALLBACK.get(destination.lower(), [])
+        existing = {a["name"].lower() for a in attractions}
         for item in fb:
-            if item not in attractions:
-                attractions.append(item)
+            if item.lower() not in existing:
+                attractions.append({"name": item, "fee": "Unknown"})
 
     itinerary = _build_itinerary(attractions, days, destination)
     return {"itinerary": itinerary}
