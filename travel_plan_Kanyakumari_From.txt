@@ -1,0 +1,96 @@
+========================================================
+🌍  AI TRAVEL PLAN
+=================
+
+  Destination    : Kanyakumari From
+  Duration       : 3 day(s)
+  Budget         : ₹20,000
+
+--------------------------------------------------------
+  🌤  WEATHER
+--------------------------------------------------------
+  Temperature : 4.2°C
+Condition : Mist
+
+  📆 3-Day Forecast
+  Fri 06 Mar : ☀️ 5.3°C / -0.6°C — Sunny
+  Sat 07 Mar : 🌧️ 4.1°C / 1.5°C — Patchy rain nearby
+  Sun 08 Mar : 🌫️ 5.3°C / 1.6°C — Mist
+
+--------------------------------------------------------
+  🏨  HOTELS
+--------------------------------------------------------
+    • Amaari Beach Resort
+  ₹591 per night — Beach Resort
+  • Hotel Sahaya Arasi
+  ₹3,672 per night ($40) — Budget Option
+  • Hotel Golden Sea
+  ₹9,364 per night ($102) — Sea View Hotel
+  • Hotel Seaface
+  ₹9,088 per night ($99) — Sea View Hotel
+  • Hotel Sebaa Palace
+  ₹3,121 per night ($34) — Budget Palace
+
+--------------------------------------------------------
+  🚗  TRANSPORT OPTIONS
+--------------------------------------------------------
+    • ✈ By Air
+  • Nearest Airport : Coimbatore International Airport (CJB)
+  • Distance to Kanyakumari From : Not specified, but Coimbatore International Airport is the nearest airport to Coimbatore.
+  • 🚆 By Train
+  • Primary railway station : Coimbatore Jn
+  • Connectivity types : Direct trains available, with the fastest train being Coimbatore - Nagercoil SF Express which covers a distance of 512 kilometres in approximately 9 Hours.
+  • 🚌 By Bus
+  • Primary bus hub or state transport details : Coimbatore station, operated by Kallada Tours and Travels, with bus services available via Kollam.
+  • 🚗 By Road
+  • Coimbatore → Kanyakumari From
+  • Distance : 509 km
+  • Travel time : 10h 58m
+
+--------------------------------------------------------
+  ✈  FLIGHTS (Live via Amadeus)
+--------------------------------------------------------
+  Flight search skipped: no IATA code found for 'Kanyakumari From'.
+
+--------------------------------------------------------
+  🗓  DAY-BY-DAY ITINERARY
+--------------------------------------------------------
+  Day 1
+    Morning: Vivekananda Rock Memorial (Free)
+    Afternoon: Kanyakumari Lighthouse (INR 10)
+    Evening: Sunset Point, Kanyakumari (Free)
+  Day 2
+    Morning: Thiruvalluvar Statue (INR 15)
+    Afternoon: Kumari Amman Temple (Free)
+    Evening: Gandhi Memorial Mandapam (Free)
+  Day 3
+    Morning: Thirparappu Waterfalls (INR 10)
+    Afternoon: Padmanabhapuram Palace (INR 50)
+    Evening: Kanyakumari Wax Museum (INR 20)
+
+--------------------------------------------------------
+  🗺  MAP
+--------------------------------------------------------
+    🔗 View on Google Maps: https://maps.google.com/maps?q=Vivekananda%20Rock%20Memorial%2C%20Kanyakumari%20From
+  📍 Attractions:
+      ∙ Vivekananda Rock Memorial → https://maps.google.com/maps?q=Vivekananda+Rock+Memorial
+      ∙ Kanyakumari Lighthouse → https://maps.google.com/maps?q=Kanyakumari+Lighthouse
+      ∙ Sunset Point, Kanyakumari → https://maps.google.com/maps?q=Sunset+Point,+Kanyakumari
+      ∙ Thiruvalluvar Statue → https://maps.google.com/maps?q=Thiruvalluvar+Statue
+      ∙ Kumari Amman Temple → https://maps.google.com/maps?q=Kumari+Amman+Temple
+      ∙ Gandhi Memorial Mandapam → https://maps.google.com/maps?q=Gandhi+Memorial+Mandapam
+      ∙ Thirparappu Waterfalls → https://maps.google.com/maps?q=Thirparappu+Waterfalls
+      ∙ Padmanabhapuram Palace → https://maps.google.com/maps?q=Padmanabhapuram+Palace
+
+  💰  ESTIMATED COST
+--------------------------------------------------------
+  Cost Region      : 🇮🇳 India (Domestic)
+  Exchange Rate    : 1 INR ≈ ₹1
+  Accommodation     : ₹43,646.40  ($519.60 (3 days × USD 173.20))
+  Flight (Amadeus)  : ₹4,500.00  (₹4,500)
+  Food              : ₹1,800.00  (INR)
+  Misc / Activities : ₹105.00  (INR)
+  ------------------------------------------
+  TOTAL             : ₹50,051.40
+  Exceeds budget ⚠️
+========================================================

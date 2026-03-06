@@ -12,14 +12,14 @@ import urllib.parse
 def _extract_places(itinerary: str) -> list:
     """Pull attraction names from formatted itinerary text."""
     places = []
-    # Match lines like: "Morning  : Visit Marina Bay Sands" or "Visit Gardens by the Bay"
-    for m in re.finditer(r"Visit\s+(.+?)(?:\s*\(|$)", itinerary, re.MULTILINE):
-        place = m.group(1).strip().strip(".,")
-        # Skip generic filler lines
-        skip = {"local area", "local markets", "a café", "local dinner", "surroundings", "explore local"}
-        if place.lower() not in skip and len(place) > 4:
-            places.append(place)
-    return list(dict.fromkeys(places))  # deduplicate while preserving order
+    # Match lines like: "  Morning: Eravikulam National Park (₹200)"
+    for line in itinerary.split("\n"):
+        match = re.search(r"^\s*(?:Morning|Afternoon|Evening):\s*(.+?)(?:\s*\(|$)", line, re.IGNORECASE)
+        if match:
+            place = match.group(1).strip()
+            if place.lower() not in {"relax", "rest", "tbd", "unknown"} and len(place) > 3:
+                places.append(place)
+    return list(dict.fromkeys(places))
 
 
 def map_agent(state: dict) -> dict:

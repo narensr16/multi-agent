@@ -29,10 +29,10 @@ KNOWN_DESTINATIONS = [
 
 def _extract_destination(text: str) -> str:
     # Look for common patterns
-    # We use a lookahead to stop before keywords like from, for, with, budget
+    # We use a non-greedy match with a lookahead to stop before keywords like from, for, with, budget
     patterns = [
-        r'(?:visit|travel to|trip to|plan.*?to|heading to|go to|into|in)\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)?)(?=\s+(?:from|for|with|budget)|$)',
-        r'to\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)?)(?=\s+(?:from|for|with|budget)|$)'
+        r'(?:visit|travel to|trip to|plan.*?to|heading|go to|into|in)\s+([a-zA-Z\s]+?)(?=\s+(?:from|for|with|budget)|$)',
+        r'to\s+([a-zA-Z\s]+?)(?=\s+(?:from|for|with|budget)|$)'
     ]
     
     for pat in patterns:

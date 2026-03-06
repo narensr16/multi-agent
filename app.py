@@ -21,7 +21,7 @@ st.set_page_config(
 )
 
 st.title("🌍 AI Travel Assistant")
-st.markdown("Powered by **LangGraph** & **Tavily Search**")
+st.markdown("Powered by **LangGraph** & **Tavily Search** | `v2.4 - Final Refined`")
 st.markdown("---")
 
 # Initialize graph securely in session state

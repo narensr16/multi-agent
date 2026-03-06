@@ -1,0 +1,90 @@
+========================================================
+🌍  AI TRAVEL PLAN
+=================
+
+  Destination    : Kanyakumari
+  Duration       : 3 day(s)
+  Budget         : ₹20,000
+
+--------------------------------------------------------
+  🌤  WEATHER
+--------------------------------------------------------
+  Temperature : 25.4°C
+Condition : Clear
+
+  📆 3-Day Forecast
+  Fri 06 Mar : 🌧️ 31.6°C / 23.0°C — Patchy rain nearby
+  Sat 07 Mar : 🌧️ 31.8°C / 23.5°C — Patchy rain nearby
+  Sun 08 Mar : ☀️ 32.7°C / 23.7°C — Sunny
+
+--------------------------------------------------------
+  🏨  HOTELS
+--------------------------------------------------------
+    • Hotel Seaface
+  ₹9,088 per night ($99) — Beach Front View
+  • Hotel Sebaa Palace
+  ₹3,121 per night ($34) — Royal Treatment
+
+--------------------------------------------------------
+  🚗  TRANSPORT OPTIONS
+--------------------------------------------------------
+    • ✈ By Air
+  • Nearest Airport : Coimbatore International Airport (CJB)
+  • Distance to Visit Kanyakumari : Not directly mentioned, but Coimbatore is the origin point for flights to Kanyakumari.
+  • 🚆 By Train
+  • Primary railway station : Coimbatore Jn
+  • Connectivity types : Direct trains are not available, but trains via Cochin and Thiruvananthapuram are available. Indian Railways operates a train from Coimbatore Jn to Kanyakumari 3 times a day. Tickets cost ₹290–2,300 and the journey takes 11h 55m.
+  • 🚌 By Bus
+  • Primary bus hub or state transport details : SETC (State Express Transport Corporation) operates buses from Coimbatore to Kanyakumari. The cheapest way to get from Coimbatore to Kanyakumari costs only $6, and the quickest way takes just 5¾ hours.
+  • 🚗 By Road
+  • Coimbatore → Visit Kanyakumari
+  • Distance : Not directly mentioned, but the travel time is given as 6 hours.
+  • Travel time : Approximately 6 hours.
+
+--------------------------------------------------------
+  ✈  FLIGHTS (Live via Amadeus)
+--------------------------------------------------------
+  Flight search skipped: no IATA code found for 'Visit Kanyakumari'.
+
+--------------------------------------------------------
+  🗓  DAY-BY-DAY ITINERARY
+--------------------------------------------------------
+  Day 1
+    Morning: Arulmigu Devi Kanyakumari Bhagavati Amman Temple (Free)
+    Afternoon: Kanyakumari Beach (Free)
+    Evening: Thiruvalluvar Statue (Free)
+  Day 2
+    Morning: Vivekananda Rock Memorial (Free)
+    Afternoon: Gandhi Mandapam (Free)
+    Evening: Kanyakumari Lighthouse (Free)
+  Day 3
+    Morning: Padmanabhapuram Palace (₹ 50)
+    Afternoon: Suchindram Temple (₹ 10)
+    Evening: Tsunami Memorial Park (Free)
+
+--------------------------------------------------------
+  🗺  MAP
+--------------------------------------------------------
+    🔗 View on Google Maps: https://maps.google.com/maps?q=Arulmigu%20Devi%20Kanyakumari%20Bhagavati%20Amman%20Temple%2C%20Visit%20Kanyakumari
+  📍 Attractions:
+      ∙ Arulmigu Devi Kanyakumari Bhagavati Amman Temple → https://maps.google.com/maps?q=Arulmigu+Devi+Kanyakumari+Bhagavati+Amman+Temple
+      ∙ Kanyakumari Beach → https://maps.google.com/maps?q=Kanyakumari+Beach
+      ∙ Thiruvalluvar Statue → https://maps.google.com/maps?q=Thiruvalluvar+Statue
+      ∙ Vivekananda Rock Memorial → https://maps.google.com/maps?q=Vivekananda+Rock+Memorial
+      ∙ Gandhi Mandapam → https://maps.google.com/maps?q=Gandhi+Mandapam
+      ∙ Kanyakumari Lighthouse → https://maps.google.com/maps?q=Kanyakumari+Lighthouse
+      ∙ Padmanabhapuram Palace → https://maps.google.com/maps?q=Padmanabhapuram+Palace
+      ∙ Suchindram Temple → https://maps.google.com/maps?q=Suchindram+Temple
+
+  💰  ESTIMATED COST
+--------------------------------------------------------
+  Cost Region      : 🇮🇳 India (Domestic)
+  Exchange Rate    : 1 INR ≈ ₹1
+  Accommodation     : ₹16,758.00  ($199.50 (3 days × USD 66.50))
+  Flight (Amadeus)  : ₹4,500.00  (₹4,500)
+  Food              : ₹1,800.00  (INR)
+  Misc / Activities : ₹60.00  (INR)
+  ------------------------------------------
+  TOTAL             : ₹23,118.00
+  Exceeds budget ⚠️
+========================================================

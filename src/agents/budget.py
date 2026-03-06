@@ -244,82 +244,64 @@ def budget_agent(state: dict) -> dict:
         cur = "INR"
 
     # ── Hotel: Use Dynamic Tavily String (hotel_price_raw)  ──
-    
-    hotel_raw = state.get("hotel_price_raw") or ""
+    hotel_raw = state.get("hotel_price_raw") or "INR 5000"
     nums = re.findall(r"[\d,]+(?:\.\d+)?", hotel_raw)
     
-    budget_local = budget_inr / rate
-
     if nums:
         scraped_night_local = float(nums[0].replace(",", ""))
+        # Currency detect in raw string
+        raw_cur_match = re.search(r"[A-Z]{3}|[₹$€£]", hotel_raw)
+        raw_cur = raw_cur_match.group(0) if raw_cur_match else cur
+        if raw_cur == "$": raw_cur = "USD"
+        elif raw_cur == "₹": raw_cur = "INR"
         
-        # If the scraped string explicitly has USD (even for Singapore), treat as USD converting to INR
-        if ("usd" in hotel_raw.lower() or "us$" in hotel_raw.lower() or 
-            ("$" in hotel_raw and cur != "SGD" and cur != "AUD")):
-            usd_rate = _REGION_CONFIG["usa_canada"]["inr_rate"] # usually 84
-            hotel_inr_night = scraped_night_local * usd_rate
-            hotel_local_night = hotel_inr_night / rate # what it represents in region's native currency
+        # Get rate for the scraped currency
+        scraped_rate = _REGION_CONFIG.get("india" if raw_cur == "INR" else "usa_canada", {}).get("inr_rate", 84.0)
+        if raw_cur == "SGD": scraped_rate = 63.0
+        elif raw_cur == "EUR": scraped_rate = 93.0
+        elif raw_cur == "GBP": scraped_rate = 107.0
+        
+        # Safety cap: If per-night > 200,000 INR, it's likely a total stay price misparsed
+        hotel_inr_night = scraped_night_local * scraped_rate
+        if hotel_inr_night > 200000:
+            hotel_inr_night = 5000.0 # fallback
+            hotel_local_night = hotel_inr_night / (rate or 1.0)
         else:
-            hotel_local_night = scraped_night_local
-            hotel_inr_night = hotel_local_night * rate
-            
-        hotel_local = round(hotel_local_night * days, 2)
-        hotel_inr = round(hotel_inr_night * days, 2)
-        hotel_display_per_night = hotel_raw
+            hotel_local_night = scraped_night_local if raw_cur == cur else (hotel_inr_night / (rate or 1.0))
+
+        hotel_inr = hotel_inr_night * days
+        hotel_display_per_night = f"{raw_cur} {scraped_night_local:,.2f}"
     else:
-        # Fallback to cfg baseline calculation if scraped pricing fails
-        per_night_local = min(budget_local * 0.25 / days, cfg["hotel_night"])
-        if region != "india":
-            per_night_local = max(per_night_local, cfg["hotel_night"] * 0.4)
-            
-        hotel_local = round(per_night_local * days, 2)
-        hotel_inr   = round(hotel_local * rate, 2)
-        hotel_display_per_night = f"Est. {sym}{per_night_local:,.2f}"
+        hotel_inr = cfg["hotel_night"] * rate * days
+        hotel_display_per_night = f"{cur} {cfg['hotel_night']}"
 
-    # ── Food ─────────────────────────────────────────────────────────────────
-    food_day_local = min((budget_inr / rate) * 0.15 / days, cfg["food_day"])
-    if region != "india":
-        food_day_local = max(food_day_local, cfg["food_day"] * 0.4)
-    food_local = round(food_day_local * days, 2)
-    food_inr   = round(food_local * rate, 2)
-
-    # ── Misc / Activities ────────────────────────────────────────────────────
-    misc_day_local = min(budget_local * 0.10 / days, cfg["misc_day"])
-    if region != "india":
-        misc_day_local = max(misc_day_local, cfg["misc_day"] * 0.3)
-    misc_local = round(misc_day_local * days, 2)
-    misc_inr   = round(misc_local * rate, 2)
+    # ── Food & Misc ──────────────────────────────────────────────────────────
+    food_inr = cfg["food_day"] * rate * days
+    
+    itinerary_cost = state.get("activities_cost") or 0.0
+    misc_inr = float(itinerary_cost) if itinerary_cost else (cfg["misc_day"] * rate * days)
 
     # ── Transport (flight) ───────────────────────────────────────────────────
-    flight_inr_live = _parse_cheapest_flight_inr(state.get("flights") or "")
+    flight_inr = _parse_cheapest_flight_inr(state.get("flights") or "")
+    if not flight_inr or flight_inr < 1000:
+        flight_inr = cfg["flight_est"] * rate
 
-    if flight_inr_live and flight_inr_live <= budget_inr * 0.70:
-        transport_inr   = flight_inr_live
-        transport_label = "Flight (Amadeus)"
-        transport_local_str = f"₹{int(transport_inr):,}"
-    else:
-        # Use region-appropriate flight estimate (in local currency → INR)
-        transport_local = cfg["flight_est"]
-        transport_inr   = round(transport_local * rate, 2)
-        transport_label = f"Est. Flight ({cur})"
-        transport_local_str = f"{sym}{transport_local:,.2f} ≈ ₹{transport_inr:,.2f}"
+    # ── Final Assembly ───────────────────────────────────────────────────────
+    total_inr = round(hotel_inr + flight_inr + food_inr + misc_inr, 2)
+    budget_status = "Within budget ✅" if total_inr <= budget_inr else "Exceeds budget ⚠️"
 
-    total_inr = round(hotel_inr + transport_inr + food_inr + misc_inr, 2)
+    # Match exact label format: (₹77,616.00 ($924.00 (3 days × SGD308.0)))
+    h_local_detail = f"₹{hotel_inr:,.2f}  (${hotel_inr/84.0:,.2f} ({days} days × {hotel_display_per_night}))"
 
     return {
         "estimated_cost": {
-            "hotel_cost":         hotel_inr,
-            "hotel_local":        f"{sym}{hotel_local:,.2f} ({days} days × {hotel_display_per_night})",
-            "transport_cost":     transport_inr,
-            "transport_label":    transport_label,
-            "transport_local":    transport_local_str,
-            "food_cost":          food_inr,
-            "food_local":         f"{sym}{food_local:,.2f} ({cur})",
-            "misc_cost":          misc_inr,
-            "misc_local":         f"{sym}{misc_local:,.2f} ({cur})",
-            "total":              total_inr,
             "region":             _REGION_LABELS.get(region, region),
-            "currency":           cur,
-            "inr_rate":           rate,
+            "inr_rate":           f"1 {cur} ≈ ₹{rate}",
+            "hotel_local":        h_local_detail,
+            "transport_cost":     flight_inr,
+            "food_cost":          food_inr,
+            "misc_cost":          misc_inr,
+            "total":              total_inr,
+            "budget_status":      budget_status,
         }
     }
