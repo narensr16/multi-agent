@@ -8,7 +8,7 @@ from graph import build_graph
 app = build_graph()
 
 initial_state = {
-    'user_query': 'I want to go a 3-day trip from bangalore to singapore budget is 30000',
+    'user_query': 'i want to go 5 DAY TRIP from coimbatore to kerala budget is 7000',
     'messages':   [],
     'destination': None,
     'days':        None,

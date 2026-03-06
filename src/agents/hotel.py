@@ -27,7 +27,7 @@ def hotel_agent(state: dict) -> dict:
 
     try:
         client = TavilyClient(api_key=_TAVILY_KEY)
-        q1 = f"average hotel cost per night {destination} budget luxury prices list"
+        q1 = f"List 5 specific real popular hotels in {destination} with their current nightly room rates"
         res1 = client.search(q1, max_results=6)
         
         chunks = [res1.get("answer") or ""] + [r.get("content") or "" for r in res1.get("results", [])]
@@ -45,8 +45,10 @@ def hotel_agent(state: dict) -> dict:
         if (not res1.get("answer") or hotel_price_raw == "Unknown") and _GROQ_KEY and _GROQ_KEY != "your_groq_api_key_here":
             llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
             prompt = (
-                f"Extract up to 5 real, popular hotels in {destination} from the text below.\n"
+                f"Extract up to 5 ACTUAL, REAL SPECIFIC hotels in {destination} from the text below.\n"
+                f"Ignore generic headers like '5-star hotel', 'cheap hotel', 'luxury stay'. We need REAL NAMES (e.g., 'Grand Hyatt Kochi', 'The Tamara Coorg').\n"
                 f"For EACH hotel, extract its individual nightly price (e.g., 'SGD 200', '$150', '₹5000').\n"
+                f"IMPORTANT: If the destination is in India, PRIORITIZE prices in INR (₹). If you see symbols like 'C$' or 'A$' for an Indian hotel, it is likely a scraping error; try to find the INR price or use the raw number as INR if it seems like a local rate.\n"
                 f"Return ONLY a raw JSON dictionary with a single key 'hotel_data' which is a list of objects.\n"
                 f'Example: {{"hotel_data": [{{"name": "Marina Bay Sands", "price": "SGD 800"}}, {{"name": "Hotel Boss", "price": "SGD 150"}}]}}\n'
                 f"Text: {combined_text}"

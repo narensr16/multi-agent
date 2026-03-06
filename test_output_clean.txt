@@ -1,75 +1,86 @@
 
 ========================================================
-🌍  AI TRAVEL PLAN (v2.1 DEBUG)
+🌍  AI TRAVEL PLAN
 =================
 
-  Destination    : Singapore
-  Duration       : 3 day(s)
-  Budget         : ₹30,000
+  Destination    : Kerala
+  Duration       : 5 day(s)
+  Budget         : ₹7,000
 
 --------------------------------------------------------
   🌤  WEATHER
 --------------------------------------------------------
-  Temperature : 28.1°C
-Condition : Partly cloudy
+  Temperature : 29.3°C
+Condition : Mist
 
   📆 3-Day Forecast
-  Fri 06 Mar : 🌧️ 29.8°C / 24.9°C — Patchy rain nearby
-  Sat 07 Mar : 🌧️ 28.0°C / 24.9°C — Moderate rain
-  Sun 08 Mar : 🌧️ 30.1°C / 25.3°C — Patchy rain nearby
+  Fri 06 Mar : 🌧️ 32.4°C / 22.5°C — Patchy rain nearby
+  Sat 07 Mar : 🌧️ 32.3°C / 23.2°C — Patchy rain nearby
+  Sun 08 Mar : 🌧️ 33.3°C / 23.2°C — Patchy rain nearby
 
 --------------------------------------------------------
   🏨  HOTELS
 --------------------------------------------------------
-  • Singapore Grand Hotel
-  • Singapore Central Resort
-  • The Singapore Inn
+  • Hyatt Regency Trivandrum (₹ 12,000)
+  • The Leela Ashtamudi, A Raviz Hotel (₹ 15,000)
+  • Kumarakom Lake Resort (₹ 10,000)
+  • Brunton Boatyard Kerala (₹ 8,000)
+  • Kochi Marriott Hotel (₹ 10,000)
 
 --------------------------------------------------------
   🚗  TRANSPORT OPTIONS
 --------------------------------------------------------
-By Air : Singapore Changi Airport (SIN)
+By Air : Cochin International Airport.
 
 --------------------------------------------------------
   ✈  FLIGHTS (Live via Amadeus)
 --------------------------------------------------------
-BLR → SIN
-Airline : UL
-Duration : 8h 40m
-Price : ₹13,523
+CJB → COK
+Airline : Air India
+Duration : 6h 55m
+Price : ₹16,130
 
 --------------------------------------------------------
   🗓  DAY-BY-DAY ITINERARY
 --------------------------------------------------------
 Day 1
-Marina Bay Sands
-Gardens by the Bay
+Sree Padmanabhaswamy Temple
+Marari Beach
 
 Day 2
-Merlion
-Sentosa Island
-Universal Studios
+Kovalam Beach
+Varkala Beach
+Jatayu Cultural Show
 
 Day 3
-Cloud Garden
-Skypark Observation deck
-Singapore National Orchid Garden
+Eravikulam National Park
+Tea Museum
+Rajamala National Park
+
+Day 4
+Lakkam Waterfalls
+Fort Kochi
+Periyar Wildlife Sanctuary
+
+Day 5
+Kumarakom
+Bekal Fort
+Thekkady
 
 --------------------------------------------------------
   🗺  MAP
 --------------------------------------------------------
-  🔗 View on Google Maps: https://maps.google.com/maps?q=tourist%20attractions%20in%20Singapore
+  🔗 View on Google Maps: https://maps.google.com/maps?q=tourist%20attractions%20in%20Kerala
 
 --------------------------------------------------------
   💰  ESTIMATED COST
 --------------------------------------------------------
-  Cost Region      : 🌏 SE Asia Premium (USD)
-  Exchange Rate    : 1 USD ≈ ₹84.0
-  Accommodation     : ₹25,200.00  ($300.00 (3 days × $100))
-  Flight (Amadeus)  : ₹13,523.00  (₹13,523)
-  Food              : ₹4,499.88  ($53.57 (USD))
-  Misc / Activities : ₹2,999.64  ($35.71 (USD))
+  Cost Region      : 🇮🇳 India (Domestic)
+  Accommodation     : ₹55,000.00  (₹55,000.00 (5 days × ₹11000.0))
+  Est. Flight (INR) : ₹4,500.00  (₹4,500.00 ≈ ₹4,500.00)
+  Food              : ₹1,050.00  (₹1,050.00 (INR))
+  Misc / Activities : ₹  700.00  (₹700.00 (INR))
   ------------------------------------------
-  TOTAL             : ₹46,222.52
+  TOTAL             : ₹61,250.00
   Exceeds budget ⚠️
 ========================================================

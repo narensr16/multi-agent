@@ -238,6 +238,10 @@ def budget_agent(state: dict) -> dict:
     rate    = cfg["inr_rate"]           # 1 local unit = rate INR
     sym     = cfg["symbol"]
     cur     = cfg["currency"]
+    
+    if region == "india":
+        sym = "₹"
+        cur = "INR"
 
     # ── Hotel: Use Dynamic Tavily String (hotel_price_raw)  ──
     

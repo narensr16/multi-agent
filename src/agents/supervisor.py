@@ -17,12 +17,13 @@ from state import AgentState
 
 
 KNOWN_DESTINATIONS = [
-    "kodaikanal", "goa", "manali", "shimla", "kerala", "ooty",
+    "kerala", "kodaikanal", "goa", "manali", "shimla", "ooty",
     "rajasthan", "delhi", "mumbai", "kolkata", "jaipur", "agra",
     "varanasi", "rishikesh", "darjeeling", "coorg", "mysore",
     "hyderabad", "bangalore", "chennai", "pune", "ahmedabad",
     "leh", "ladakh", "spiti", "munnar", "alleppey", "andaman",
-    "gokarna", "hampi", "udaipur", "jodhpur", "kochi",
+    "gokarna", "hampi", "udaipur", "jodhpur", "kochi", "karnataka",
+    "tamil nadu", "maharashtra", "kashmir", "srinagar",
 ]
 
 
@@ -36,8 +37,8 @@ def _extract_destination(text: str) -> str:
         return m1.group(1).strip().title()
 
     match = re.search(
-        r'(?:visit|travel to|trip to|plan.*?to|heading to|in)\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)'
-        r'(?:\s+for|\s+from|\s+with|\s*$)', text, re.IGNORECASE)
+        r'(?:visit|travel to|trip to|plan.*?to|heading to|in|go)\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)'
+        r'(?:\s+for|\s+from|\s+with|\s+budget|\s*$)', text, re.IGNORECASE)
     if match:
         cand = match.group(1).strip()
         if cand.lower() not in ('go a', 'have a', 'take a', 'trip'):
@@ -188,7 +189,7 @@ def supervisor_final(state: AgentState) -> dict:
         transport_local = cost_info.get("transport_local", "")
         verdict         = "Within budget ✅" if total <= budget else "Exceeds budget ⚠️"
 
-        def _local(s): return f"  ({s})" if s and currency != "INR" else ""
+        def _local(s): return f"  ({s})" if s else ""
 
         region_note = f"  Cost Region      : {region_label}\n" if region_label else ""
         rate_note   = f"  Exchange Rate    : 1 {currency} ≈ ₹{inr_rate:.1f}\n" if currency != "INR" else ""
