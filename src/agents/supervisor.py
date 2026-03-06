@@ -245,7 +245,7 @@ def supervisor_final(state: AgentState) -> dict:
         f"{SEP2}\n"
         f"  ✈  FLIGHTS (Live via Amadeus)\n"
         f"{SEP2}\n"
-        f"  {flights_raw}\n\n"
+        f"  {flights_raw.replace('\n', '\n  ')}\n\n"
         f"{SEP2}\n"
         f"  🗓  DAY-BY-DAY ITINERARY\n"
         f"{SEP2}\n"

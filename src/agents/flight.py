@@ -266,9 +266,13 @@ NEAREST_HUB = {
 }
 
 AIRLINE_NAMES = {
-    "AI": "Air India",  "6E": "IndiGo",    "SG": "SpiceJet",
-    "UK": "Vistara",    "QP": "Akasa Air", "G8": "Go First",
-    "IX": "Air Asia",   "9W": "Jet Airways","S5": "Star Air",
+    "AI": "Air India",      "6E": "IndiGo",      "SG": "SpiceJet",
+    "UK": "Vistara",        "QP": "Akasa Air",   "G8": "Go First",
+    "IX": "Air India Exp",  "9W": "Jet Airways", "S5": "Star Air",
+    "SQ": "Singapore Air",  "MH": "Malaysia Air","UL": "SriLankan",
+    "EK": "Emirates",       "QR": "Qatar Airways","EY": "Etihad",
+    "LH": "Lufthansa",      "BA": "British Air", "AF": "Air France",
+    "CX": "Cathay Pacific", "TG": "Thai Airways", "VN": "Vietnam Air",
 }
 
 
@@ -293,9 +297,9 @@ def _format_duration(iso: str) -> str:
 
 def flight_agent(state: dict) -> dict:
     """
-    Search for the 3 cheapest one-way flights to state["destination"].
+    Search for the cheapest flights to state["destination"].
     Departure assumed to be a major hub closest to the user (defaults to DEL).
-    Writes: flights (formatted string)
+    Returns top 3 options.
     """
     destination = state.get("destination", "")
     budget      = float(state.get("budget", 50000))
@@ -345,45 +349,37 @@ def flight_agent(state: dict) -> dict:
         if not offers:
             return {"flights": f"No flights found from {origin_iata} to {dest_iata}."}
 
-        # Sort by price and take top 1 for the final report as per example
+        # Sort by price and take top 3
         offers.sort(key=lambda o: float(o["price"]["grandTotal"]))
-        offer = offers[0]
+        top_offers = offers[:3]
         
-        itinerary = offer["itineraries"][0]
-        duration = _format_duration(itinerary["duration"])
-        price_inr = float(offer["price"]["grandTotal"])
-        
-        # Get flight details from segments
-        segments = itinerary["segments"]
-        first_seg = segments[0]
-        last_seg = segments[-1]
-        
-        airline_code = first_seg["carrierCode"]
-        airline_name = AIRLINE_NAMES.get(airline_code, airline_code)
-        
-        dep_time = first_seg["departure"]["at"].split("T")[1][:5]
-        arr_time = last_seg["arrival"]["at"].split("T")[1][:5]
-        
-        # Format: 
-        # Origin → Dest
-        # Airline : Airline Name
-        # Departure : HH:MM
-        # Arrival : HH:MM
-        # Duration : Xh Ym
-        # Price : ₹INR
-        
-        airline_label = f"Airline : {airline_name}"
-        
-        lines = [
-            f"{origin_iata} → {dest_iata}",
-            airline_label,
-            f"Departure : {dep_time}",
-            f"Arrival : {arr_time}",
-            f"Duration : {duration}",
-            f"Price : ₹{int(price_inr):,}"
-        ]
+        all_flight_blocks = []
+        for offer in top_offers:
+            itinerary = offer["itineraries"][0]
+            duration = _format_duration(itinerary["duration"])
+            price_inr = float(offer["price"]["grandTotal"])
+            
+            segments = itinerary["segments"]
+            first_seg = segments[0]
+            last_seg = segments[-1]
+            
+            airline_code = first_seg["carrierCode"]
+            airline_name = AIRLINE_NAMES.get(airline_code, airline_code)
+            
+            dep_time = first_seg["departure"]["at"].split("T")[1][:5]
+            arr_time = last_seg["arrival"]["at"].split("T")[1][:5]
+            
+            block = [
+                f"  {origin_iata} → {dest_iata}",
+                f"Airline : {airline_name}",
+                f"Departure : {dep_time}",
+                f"Arrival : {arr_time}",
+                f"Duration : {duration}",
+                f"Price : ₹{int(price_inr):,}"
+            ]
+            all_flight_blocks.append("\n".join(block))
 
-        return {"flights": "\n".join(lines)}
+        return {"flights": "\n\n".join(all_flight_blocks)}
 
     except Exception as e:
         print(f"Flight search failed: {e}")

@@ -1,0 +1,108 @@
+========================================================
+🌍  AI TRAVEL PLAN
+=================
+
+  Destination    : Singapore
+  Duration       : 3 day(s)
+  Budget         : ₹60,000
+
+--------------------------------------------------------
+  🌤  WEATHER
+--------------------------------------------------------
+  Temperature : 27.2°C
+Condition : Partly cloudy
+
+  📆 3-Day Forecast
+  Sat 07 Mar : 🌧️ 28.8°C / 25.1°C — Moderate rain
+  Sun 08 Mar : 🌧️ 29.8°C / 25.2°C — Patchy rain nearby
+  Mon 09 Mar : 🌧️ 30.3°C / 25.5°C — Patchy rain nearby
+
+--------------------------------------------------------
+  🏨  HOTELS
+--------------------------------------------------------
+    • The Westin Singapore
+  ₹44,984 per night ($490) — Luxury Stay
+  • Crowne Plaza Changi Airport by IHG
+  ₹23,410 per night ($255) — Airport Access
+
+--------------------------------------------------------
+  🚗  TRANSPORT OPTIONS
+--------------------------------------------------------
+    • ✈ By Air
+  • Nearest Airport : Delhi Airport (DEL)
+  • Distance to Singapore : Approximately 4150+ kms
+  • 🚆 By Train
+  • Unfortunately, there is no information about train connectivity from Delhi to Singapore.
+  • 🚌 By Bus
+  • Unfortunately, there is no information about bus connectivity from Delhi to Singapore.
+  • 🚗 By Road
+  • DEL → Singapore
+  • Distance : 5705.5 km
+  • Travel time : Approximately 6h 11m
+
+--------------------------------------------------------
+  ✈  FLIGHTS (Live via Amadeus)
+--------------------------------------------------------
+    DEL → SIN
+  Airline : SriLankan
+  Departure : 05:15
+  Arrival : 18:55
+  Duration : 11h 10m
+  Price : ₹11,764
+  
+    DEL → SIN
+  Airline : SriLankan
+  Departure : 18:45
+  Arrival : 08:30
+  Duration : 11h 15m
+  Price : ₹11,764
+  
+    DEL → SIN
+  Airline : SriLankan
+  Departure : 18:45
+  Arrival : 18:55
+  Duration : 21h 40m
+  Price : ₹11,764
+
+--------------------------------------------------------
+  🗓  DAY-BY-DAY ITINERARY
+--------------------------------------------------------
+  Day 1
+    Morning: Gardens by the Bay (SGD 28)
+    Afternoon: Marina Bay Sands Skypark (SGD 23)
+    Evening: Merlion Park (Free)
+  Day 2
+    Morning: Universal Studios Singapore (SGD 76)
+    Afternoon: Sentosa Island (Free)
+    Evening: Wings of Time Show (SGD 24)
+  Day 3
+    Morning: Singapore Zoo (SGD 39)
+    Afternoon: Night Safari (SGD 59)
+    Evening: Clar Quay (Free)
+
+--------------------------------------------------------
+  🗺  MAP
+--------------------------------------------------------
+    🔗 View on Google Maps: https://maps.google.com/maps?q=Gardens%20by%20the%20Bay%2C%20Singapore
+  📍 Attractions:
+      ∙ Gardens by the Bay → https://maps.google.com/maps?q=Gardens+by+the+Bay
+      ∙ Marina Bay Sands Skypark → https://maps.google.com/maps?q=Marina+Bay+Sands+Skypark
+      ∙ Merlion Park → https://maps.google.com/maps?q=Merlion+Park
+      ∙ Universal Studios Singapore → https://maps.google.com/maps?q=Universal+Studios+Singapore
+      ∙ Sentosa Island → https://maps.google.com/maps?q=Sentosa+Island
+      ∙ Wings of Time Show → https://maps.google.com/maps?q=Wings+of+Time+Show
+      ∙ Singapore Zoo → https://maps.google.com/maps?q=Singapore+Zoo
+      ∙ Night Safari → https://maps.google.com/maps?q=Night+Safari
+
+  💰  ESTIMATED COST
+--------------------------------------------------------
+  Cost Region      : 🌏 SE Asia Premium (USD)
+  Exchange Rate    : 1 USD ≈ ₹84
+  Accommodation     : ₹93,870.00  ($1,117.50 (3 days × USD 372.50))
+  Flight (Amadeus)  : ₹11,764.00  (₹11,764)
+  Food              : ₹8,820.00  (INR)
+  Misc / Activities : ₹17,860.99  (INR)
+  ------------------------------------------
+  TOTAL             : ₹132,314.99
+  Exceeds budget ⚠️
+========================================================
