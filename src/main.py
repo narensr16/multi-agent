@@ -31,12 +31,26 @@ EXAMPLES = [
 
 def main() -> None:
     print(BANNER)
-    print("📌 Example queries:")
-    for q in EXAMPLES:
-        print(f"   → {q}")
-    print()
+    
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--destination", type=str)
+    parser.add_argument("--origin", type=str)
+    parser.add_argument("--days", type=int)
+    parser.add_argument("--budget", type=int)
+    args, _ = parser.parse_known_args()
 
-    user_input = input("Enter your travel request: ").strip()
+    if args.destination and args.days and args.budget:
+        origin_part = f" from {args.origin}" if args.origin else ""
+        user_input = f"I want to visit {args.destination}{origin_part} for {args.days} days with {args.budget} budget"
+    else:
+        print("📌 Example queries:")
+        for q in EXAMPLES:
+            print(f"   → {q}")
+        print()
+
+        user_input = input("Enter your travel request: ").strip()
+        
     if not user_input:
         print("No input provided. Exiting.")
         sys.exit(0)

@@ -345,26 +345,46 @@ def flight_agent(state: dict) -> dict:
         if not offers:
             return {"flights": f"No flights found from {origin_iata} to {dest_iata}."}
 
-        # Sort by price and take top 3
+        # Sort by price and take top 1 for the final report as per example
         offers.sort(key=lambda o: float(o["price"]["grandTotal"]))
-        top3 = offers[:3]
-
+        offer = offers[0]
         
-        lines = []
-        for i, offer in enumerate(top3, 1):
-            if i > 1: break
-            seg      = offer["itineraries"][0]["segments"][0]
-            carrier  = seg["carrierCode"]
-            airline  = AIRLINE_NAMES.get(carrier, carrier)
-            duration = _format_duration(offer["itineraries"][0]["duration"])
-            price    = float(offer["price"]["grandTotal"])
-
-            lines.append(f"{origin_iata} → {dest_iata}")
-            lines.append(f"Airline : {airline}")
-            lines.append(f"Duration : {duration}")
-            lines.append(f"Price : ₹{int(price):,}")
+        itinerary = offer["itineraries"][0]
+        duration = _format_duration(itinerary["duration"])
+        price_inr = float(offer["price"]["grandTotal"])
+        
+        # Get flight details from segments
+        segments = itinerary["segments"]
+        first_seg = segments[0]
+        last_seg = segments[-1]
+        
+        airline_code = first_seg["carrierCode"]
+        airline_name = AIRLINE_NAMES.get(airline_code, airline_code)
+        
+        dep_time = first_seg["departure"]["at"].split("T")[1][:5]
+        arr_time = last_seg["arrival"]["at"].split("T")[1][:5]
+        
+        # Format: 
+        # Origin → Dest
+        # Airline : Airline Name
+        # Departure : HH:MM
+        # Arrival : HH:MM
+        # Duration : Xh Ym
+        # Price : ₹INR
+        
+        airline_label = f"Airline : {airline_name}"
+        
+        lines = [
+            f"{origin_iata} → {dest_iata}",
+            airline_label,
+            f"Departure : {dep_time}",
+            f"Arrival : {arr_time}",
+            f"Duration : {duration}",
+            f"Price : ₹{int(price_inr):,}"
+        ]
 
         return {"flights": "\n".join(lines)}
 
     except Exception as e:
-        return {"flights": f"Flight search failed: {e}"}
+        print(f"Flight search failed: {e}")
+        return {"flights": "Flight data unavailable."}

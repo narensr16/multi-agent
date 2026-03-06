@@ -15,31 +15,39 @@ _GROQ_KEY = os.getenv("GROQ_API_KEY", "").strip()
 def transport_agent(state: dict) -> dict:
     destination = state.get("destination", "")
 
-    if not destination or destination == "Unknown":
-        return {"transport": "Transport search skipped: destination unknown."}
-    if not _TAVILY_KEY:
-        return {"transport": "Transport search skipped: TAVILY_API_KEY not configured."}
-
-    transport_text = "By Air : Nearest Airport"
+    origin = state.get("origin") or "major cities"
+    final_transport = "Transport information unavailable."
 
     try:
         client = TavilyClient(api_key=_TAVILY_KEY)
-        q = f"how to reach {destination} by flight nearest airport name"
-        res = client.search(q, max_results=3)
-        parts = [res.get("answer") or ""] + [r.get("content") or "" for r in res.get("results", [])]
-        combined = " ".join(parts)
+        # Search specifically for the route from origin to destination
+        q_route = f"how to reach {destination} from {origin} by air, train, bus, and road. Include distances and travel times."
+        res_route = client.search(q_route, max_results=5)
+        
+        route_chunks = [res_route.get("answer") or ""] + [r.get("content") or "" for r in res_route.get("results", [])]
+        combined_text = " ".join(route_chunks)
 
-        if _GROQ_KEY and _GROQ_KEY != "your_groq_api_key_here":
+        if _GROQ_KEY:
             llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
             prompt = (
-                f"Based on the text below, identify the primary transport mode (e.g., By Air, By Train) and the name of the main station/airport to reach {destination}.\n"
-                f"Keep it extremely concise, to exactly 1 line matching this format exactly: 'By Air : Singapore Changi Airport (SIN)'.\n"
-                f"Text: {combined}"
+                f"Identify real transport options from {origin} to {destination} based on the text.\n"
+                f"You MUST include these sections with emojis:\n"
+                f"✈ By Air (Nearest airport name, code, and approx distance to city)\n"
+                f"🚆 By Train (Primary railway station and connectivity types)\n"
+                f"🚌 By Bus (Primary bus hub or state transport details)\n"
+                f"🚗 By Road (Origin → Destination, Distance in km, and approx Travel time)\n\n"
+                f"Structure the output exactly like this:\n"
+                f"✈ By Air\nNearest Airport : ...\nDistance to {destination} : ...\n\n🚆 By Train\n...\n\n🚌 By Bus\n...\n\n🚗 By Road\n{origin} → {destination}\nDistance : ...\nTravel time : ...\n\n"
+                f"Text: {combined_text}"
             )
             res = llm.invoke(prompt)
-            transport_text = res.content.strip()
+            final_transport = res.content.strip()
+            return {"transport": final_transport}
 
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Transport search failed: {e}")
+        return {"transport": "Transport information unavailable."}
 
-    return {"transport": transport_text}
+    except Exception as e:
+        print(f"Transport search failed: {e}")
+        return {"transport": "Transport information unavailable."}

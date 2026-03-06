@@ -47,65 +47,113 @@ def itinerary_agent(state: dict) -> dict:
     country, c_code, c_sym = detect_country_and_currency(destination)
     fx_rate = get_exchange_rate_to_inr(c_code)
 
-    attractions = []
+    itinerary_data = []
     
     if _TAVILY_KEY:
         try:
             client = TavilyClient(api_key=_TAVILY_KEY)
-            query = f"top tourist attractions places to visit in {destination} entrance fees ticket prices 2026"
-            result = client.search(query, max_results=6)
+            map_places = []
+            # Search for top attractions and their fees
+            q1 = f"Top tourist attractions in {destination} with entrance fees 2026 and descriptions"
+            res1 = client.search(q1, max_results=10)
             
-            combined = " ".join([r.get("content", "") for r in result.get("results", [])])
+            chunks = [res1.get("answer") or ""] + [r.get("content") or "" for r in res1.get("results", [])]
+            combined_text = " ".join(chunks)
 
             if _GROQ_KEY and _GROQ_KEY != "your_groq_api_key_here":
                 llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
-                prompt = (
-                    f"Extract up to {days * 3} real tourist attractions in {destination}.\n"
-                    f"Also extract the EXACT ticket price/entrance fee for each attraction, INCLUDING the currency symbol (like $292, SGD 28, €10, ¥1000, ₹500).\n"
-                    f"If fee is not mentioned, use 'Unknown'. If free, use 'Free'.\n"
-                    f"Return ONLY a raw JSON list of objects with keys 'name' and 'fee'. Avoid conversational text.\n\n"
-                    f"Text: {combined}"
-                )
-                res = llm.invoke(prompt)
-                content = res.content.strip()
-                if content.startswith("```json"): content = content[7:-3]
-                elif content.startswith("```"):   content = content[3:-3]
                 
-                parsed = json.loads(content.strip())
-                if isinstance(parsed, list):
-                    for a in parsed:
-                        name = str(a.get("name", "")).strip()
-                        fee = str(a.get("fee", "Unknown")).strip()
-                        if len(name) > 3:
-                            attractions.append({"name": name, "raw_fee": fee})
-        except Exception:
-            pass
+                # Get exchange rate logic from state or baseline
+                # For simplicity, we'll assume the budget agent handles the final INR conversion, 
+                # but we'll extract the fee in original and attempt to provide a numeric value.
+                
+                prompt = (
+                f"Create a {days}-day travel itinerary for {destination}.\n"
+                f"For EACH DAY, you MUST provide exactly 3 slots: Morning, Afternoon, and Evening.\n"
+                f"For EACH slot, provide:\n"
+                f"1. A specific attraction or activity name (e.g., 'Merlion Park')\n"
+                f"2. The typical entrance fee in local currency (e.g., 'SGD 20' or 'Free')\n\n"
+                f"Return ONLY a raw JSON dictionary with key 'itinerary'.\n"
+                f'Example: {{"itinerary": [{{"day": 1, "morning": {{"name": "...", "fee": "..."}}, "afternoon": {{"name": "...", "fee": "..."}}, "evening": {{"name": "...", "fee": "..."}}}}]}}\n'
+                f"Text: {combined_text}"
+            )
+            res = llm.invoke(prompt)
+            content = res.content.strip()
+            if "{" in content:
+                content = content[content.find("{"):content.rfind("}")+1]
+            
+            itinerary_data = json.loads(content).get("itinerary", [])
+            lines = []
+            total_activities_cost_inr = 0.0
 
-    if len(attractions) < days * 2:
-        fb = ["City Center", "Local Market", "Main Museum", "Central Park", "Old Town", "Heritage Village"]
-        for item in fb:
-            if item not in [a["name"] for a in attractions]:
-                attractions.append({"name": item, "raw_fee": "Unknown"})
+            for day_obj in itinerary_data:
+                d_num = day_obj.get("day", "?")
+                lines.append(f"Day {d_num}")
+                
+                for slot in ["morning", "afternoon", "evening"]:
+                    item = day_obj.get(slot, {})
+                    name = item.get("name", "Relax")
+                    fee_str = item.get("fee", "Free")
+                    
+                    # Store for map section
+                    map_places.append(f"{name} ({destination})")
+                    
+                    lines.append(f"  {slot.capitalize()}: {name} ({fee_str})")
+                    
+                    # Numeric fee extraction
+                    import re
+                    nums = re.findall(r"[\d,]+(?:\.\d+)?", fee_str)
+                    if nums:
+                        val = float(nums[0].replace(",", ""))
+                        curr_match = re.search(r"[A-Z]{3}|[₹$€£]", fee_str)
+                        curr_sym = curr_match.group(0) if curr_match else "INR"
+                        
+                        # Map symbol to code for FX lookup
+                        symbol_map = {"$": "USD", "€": "EUR", "£": "GBP", "₹": "INR", "S$": "SGD", "AED": "AED"}
+                        curr_code = curr_sym
+                        if curr_sym in symbol_map:
+                            curr_code = symbol_map[curr_sym]
+                        
+                        rate = get_exchange_rate_to_inr(curr_code)
+                        total_activities_cost_inr += (val * rate)
+
+            return {
+                "itinerary": "\n".join(lines),
+                "activities_cost": round(total_activities_cost_inr, 2),
+                "map_places": map_places[:15]
+            }
+
+        except Exception as e:
+            print(f"Itinerary search failed: {e}")
+            return {"itinerary": "Itinerary unavailable.", "activities_cost": 0.0}
+
+    if not itinerary_data:
+        # Fallback basic structure
+        itinerary_data = []
+        for d in range(1, days + 1):
+            itinerary_data.append({
+                "day": d,
+                "morning": {"name": "Local Landmarks", "fee": "Free"},
+                "afternoon": {"name": "Central Museum", "fee": "Unknown"},
+                "evening": {"name": "City Walk / Dinner", "fee": "Free"}
+            })
 
     total_activities_cost = 0.0
     lines = []
-    idx = 0
     
-    for d in range(1, days + 1):
+    for day_obj in itinerary_data:
+        d = day_obj.get("day", "?")
         lines.append(f"Day {d}")
-        day_items = attractions[idx : idx + 2] if d == 1 else attractions[idx : idx + 3]
-        if not day_items and d > 1:
-            day_items = attractions[:2] 
-        idx += len(day_items)
         
-        for item in day_items:
-            name = item["name"]
-            raw_fee = item.get("raw_fee", "Unknown")
+        for slot in ["morning", "afternoon", "evening"]:
+            item = day_obj.get(slot, {})
+            name = item.get("name", "Rest")
+            raw_fee = item.get("fee", "Free")
             
             inr_val, display_fee = parse_fee_to_inr(raw_fee, c_code, fx_rate)
             total_activities_cost += inr_val
             
-            lines.append(name)
+            lines.append(f"  {slot.capitalize()}: {name} ({display_fee})")
             
         lines.append("") # Blank line after each day
         

@@ -28,22 +28,28 @@ KNOWN_DESTINATIONS = [
 
 
 def _extract_destination(text: str) -> str:
-    """Extract destination from the query text."""
-    text_lower = text.lower()
+    # Look for common patterns
+    # We use a lookahead to stop before keywords like from, for, with, budget
+    patterns = [
+        r'(?:visit|travel to|trip to|plan.*?to|heading to|go to|into|in)\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)?)(?=\s+(?:from|for|with|budget)|$)',
+        r'to\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)?)(?=\s+(?:from|for|with|budget)|$)'
+    ]
     
-    # Check 'to <Dest>' directly
-    m1 = re.search(r'to\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)?)(?:\s+for|\s+from|\s+with|\s+budget|\s*$)', text, re.IGNORECASE)
-    if m1 and m1.group(1).lower().strip() not in ('go a', 'have a', 'take a', 'trip'):
-        return m1.group(1).strip().title()
+    for pat in patterns:
+        match = re.search(pat, text, re.IGNORECASE)
+        if match:
+            dest = match.group(1).strip()
+            # Clean up nested prefixes if any (e.g. "visit visit Kanyakumari")
+            for _ in range(3): # up to 3 times to be safe
+                for prefix in ["visit ", "go to ", "to ", "into ", "in "]:
+                    if dest.lower().startswith(prefix):
+                        dest = dest[len(prefix):].strip()
+            
+            if dest.lower() not in ('go a', 'have a', 'take a', 'trip', 'the'):
+                return dest.title()
 
-    match = re.search(
-        r'(?:visit|travel to|trip to|plan.*?to|heading to|in|go)\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)'
-        r'(?:\s+for|\s+from|\s+with|\s+budget|\s*$)', text, re.IGNORECASE)
-    if match:
-        cand = match.group(1).strip()
-        if cand.lower() not in ('go a', 'have a', 'take a', 'trip'):
-            return cand.title()
-
+    # Fallback to known destinations
+    text_lower = text.lower()
     for dest in KNOWN_DESTINATIONS:
         if re.search(r'\b' + re.escape(dest) + r'\b', text_lower):
             if not re.search(r'from\s+' + re.escape(dest), text_lower):
@@ -159,6 +165,12 @@ def supervisor_final(state: AgentState) -> dict:
     else:
         hotel_lines = "  • No hotel data available."
 
+    # ── Transport block (multi-line bullet support) ──────────────────────────
+    if transport_raw:
+        transport_fmt = "\n".join(f"  • {line.strip()}" for line in transport_raw.split("\n") if line.strip())
+    else:
+        transport_fmt = "  • Transport data unavailable."
+
     # ── Map block ─────────────────────────────────────────────────────────────
     if map_url:
         map_block = f"  🔗 View on Google Maps: {map_url}\n"
@@ -208,11 +220,14 @@ def supervisor_final(state: AgentState) -> dict:
         cost_block = "  Cost data unavailable."
 
 
+    dest_clean = destination.replace("Visit ", "").replace("to ", "").strip()
+
+    # ── Final Report Assembly ────────────────────────────────────────────────
     summary = (
-        f"\n{SEP}\n"
+        f"{SEP}\n"
         f"🌍  AI TRAVEL PLAN\n"
         f"{'=' * 17}\n\n"
-        f"  Destination    : {destination}\n"
+        f"  Destination    : {dest_clean}\n"
         f"  Duration       : {days} day(s)\n"
         f"  Budget         : ₹{int(budget):,}\n\n"
         f"{SEP2}\n"
@@ -222,30 +237,53 @@ def supervisor_final(state: AgentState) -> dict:
         f"{SEP2}\n"
         f"  🏨  HOTELS\n"
         f"{SEP2}\n"
-        f"{hotel_lines}\n\n"
+        f"  {hotel_lines}\n\n"
         f"{SEP2}\n"
         f"  🚗  TRANSPORT OPTIONS\n"
         f"{SEP2}\n"
-        f"{transport_raw}\n\n"
+        f"  {transport_fmt}\n\n"
         f"{SEP2}\n"
         f"  ✈  FLIGHTS (Live via Amadeus)\n"
         f"{SEP2}\n"
-        f"{flights_raw}\n\n"
+        f"  {flights_raw}\n\n"
         f"{SEP2}\n"
         f"  🗓  DAY-BY-DAY ITINERARY\n"
         f"{SEP2}\n"
-        f"{itinerary_raw}\n\n"
+        f"  {itinerary_raw.replace('\n', '\n  ')}\n\n"
         f"{SEP2}\n"
         f"  🗺  MAP\n"
         f"{SEP2}\n"
-        f"{map_block}\n"
-        f"{SEP2}\n"
+        f"  {map_block}\n"
         f"  💰  ESTIMATED COST\n"
         f"{SEP2}\n"
-        f"{cost_block}\n"
-        f"{SEP}\n"
-
     )
+
+    if isinstance(cost_info, dict):
+        # Match exact labels and format
+        reg_label = cost_info.get("region", "Domestic")
+        rate_info = cost_info.get("inr_rate", "N/A")
+        h_cost = cost_info.get("hotel_local", "N/A")
+        f_inr = cost_info.get("transport_cost", 0)
+        food_inr = cost_info.get("food_cost", 0)
+        misc_inr = cost_info.get("misc_cost", 0)
+        total_inr = cost_info.get("total", 0)
+        status = cost_info.get("budget_status", "Exceeds budget ⚠️")
+
+        summary += (
+            f"  Cost Region      : {reg_label}\n"
+            f"  Exchange Rate    : {rate_info}\n"
+            f"  Accommodation     : {h_cost}\n"
+            f"  Flight (Amadeus)  : ₹{f_inr:,.2f}  (₹{f_inr:,.0f})\n"
+            f"  Food              : ₹{food_inr:,.2f}  (INR)\n"
+            f"  Misc / Activities : ₹{misc_inr:,.2f}  (INR)\n"
+            f"  {'-' * 42}\n"
+            f"  TOTAL             : ₹{total_inr:,.2f}\n"
+            f"  {status}\n"
+        )
+    else:
+        summary += "  Cost data unavailable.\n"
+
+    summary += f"{SEP}\n"
 
     return {
         "final_response": summary,
