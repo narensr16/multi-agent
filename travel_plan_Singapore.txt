@@ -20,25 +20,32 @@ Condition : Partly cloudy
 --------------------------------------------------------
   🏨  HOTELS
 --------------------------------------------------------
-    • The Westin Singapore
-  ₹44,984 per night ($490) — Luxury Stay
-  • Crowne Plaza Changi Airport by IHG
-  ₹23,410 per night ($255) — Airport Access
+    • Hotel 81 Geylang
+  ₹2,790 per night (S$45) — Budget Option
+  • QT Singapore
+  ₹10,540 per night (S$170) — Modern Design
+  • The Clan Hotel Singapore by Far East Hospitality
+  ₹10,540 per night (S$170) — Luxury Stay
+  • Four Seasons Hotel Singapore
+  ₹36,722 per night ($400) — Infinity Pool
+  • PARKROYAL COLLECTION
+  ₹10,540 per night (S$170) — Comfortable Stay
 
 --------------------------------------------------------
   🚗  TRANSPORT OPTIONS
 --------------------------------------------------------
     • ✈ By Air
-  • Nearest Airport : Delhi Airport (DEL)
-  • Distance to Singapore : Approximately 4150+ kms
+  • Nearest Airport : Nearest Airport (N/A)
+  • Distance to Singapore : 4150+ km
+  • Travel time : 4-5 hours (average), 5½ hours (quickest)
   • 🚆 By Train
-  • Unfortunately, there is no information about train connectivity from Delhi to Singapore.
+  • Unfortunately, there is no information about train connectivity from DEL to Singapore.
   • 🚌 By Bus
-  • Unfortunately, there is no information about bus connectivity from Delhi to Singapore.
+  • Unfortunately, there is no information about bus connectivity from DEL to Singapore.
   • 🚗 By Road
   • DEL → Singapore
   • Distance : 5705.5 km
-  • Travel time : Approximately 6h 11m
+  • Travel time : Not specified, but the text mentions that it takes approximately 6h 11m to get from Delhi Airport (DEL) to Singapore.
 
 --------------------------------------------------------
   ✈  FLIGHTS (Live via Amadeus)
@@ -98,11 +105,11 @@ Condition : Partly cloudy
 --------------------------------------------------------
   Cost Region      : 🌏 SE Asia Premium (USD)
   Exchange Rate    : 1 USD ≈ ₹84
-  Accommodation     : ₹93,870.00  ($1,117.50 (3 days × USD 372.50))
+  Accommodation     : ₹36,099.00  ($429.75 (3 days × SGD 191.00))
   Flight (Amadeus)  : ₹11,764.00  (₹11,764)
   Food              : ₹8,820.00  (INR)
   Misc / Activities : ₹17,860.99  (INR)
   ------------------------------------------
-  TOTAL             : ₹132,314.99
+  TOTAL             : ₹74,543.99
   Exceeds budget ⚠️
 ========================================================

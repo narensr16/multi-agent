@@ -8,12 +8,17 @@ API docs: https://developers.amadeus.com/self-service/category/flights
 """
 
 import os
+import json
 from dotenv import load_dotenv
+from tavily import TavilyClient
+from langchain_groq import ChatGroq
 
 load_dotenv()
 
 AMADEUS_KEY    = os.getenv("AMADEUS_API_KEY",    "").strip()
 AMADEUS_SECRET = os.getenv("AMADEUS_API_SECRET", "").strip()
+_TAVILY_KEY    = os.getenv("TAVILY_API_KEY",     "").strip()
+_GROQ_KEY      = os.getenv("GROQ_API_KEY",       "").strip()
 
 # ── City → IATA airport code lookup ──────────────────────────────────────────
 # Covers airports with direct service. Also accepts abbreviations & alternate names.
@@ -276,9 +281,34 @@ AIRLINE_NAMES = {
 }
 
 
+def _fetch_iata_realtime(destination: str) -> str | None:
+    if not _TAVILY_KEY or not _GROQ_KEY or _GROQ_KEY == "your_groq_api_key_here":
+        return None
+    try:
+        client = TavilyClient(api_key=_TAVILY_KEY)
+        query = f"What is the nearest major commercial airport to {destination} and what is its 3-letter IATA code?"
+        search_res = client.search(query, max_results=3)
+        combined_text = " ".join([r.get("content", "") for r in search_res.get("results", [])])
+
+        llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
+        prompt = (
+            f"Based on the text, what is the 3-letter IATA code for the nearest major commercial airport to '{destination}'?\n"
+            f"Return ONLY the 3-letter code (e.g., 'DEL', 'TRV', 'SIN'). No other text.\n\n"
+            f"Text: {combined_text}"
+        )
+        res = llm.invoke(prompt)
+        code = res.content.strip()
+        if len(code) == 3 and code.isalpha():
+            return code.upper()
+    except Exception as e:
+        print(f"IATA fetch failed for {destination}: {e}")
+    return None
+
 def _get_iata(destination: str) -> str | None:
     d = destination.lower().strip()
     code = CITY_TO_IATA.get(d) or NEAREST_HUB.get(d)
+    if not code:
+        code = _fetch_iata_realtime(destination)
     return code
 
 
@@ -332,9 +362,9 @@ def flight_agent(state: dict) -> dict:
             client_secret=AMADEUS_SECRET,
         )
 
-        # Use a near-future date for test env (30 days ahead)
+        # Use a near-future date for live real-time flights (2 days ahead)
         from datetime import date, timedelta
-        depart_date = (date.today() + timedelta(days=30)).strftime("%Y-%m-%d")
+        depart_date = (date.today() + timedelta(days=2)).strftime("%Y-%m-%d")
 
         response = amadeus.shopping.flight_offers_search.get(
             originLocationCode=origin_iata,

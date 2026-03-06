@@ -9,8 +9,8 @@
 --------------------------------------------------------
   🌤  WEATHER
 --------------------------------------------------------
-  Temperature : 29.1°C
-Condition : Mist
+  Temperature : 25.1°C
+Condition : Partly Cloudy
 
   📆 3-Day Forecast
   Fri 06 Mar : 🌧️ 31.6°C / 23.0°C — Patchy rain nearby
@@ -23,79 +23,93 @@ Condition : Mist
     • Hotel Seaface
   ₹9,088 per night ($99) — Beach Front
   • Hotel Sebaa Palace
-  ₹3,121 per night ($34) — Royal Treatment
-  • Hotel Temple Citi
-  ₹2,203 per night ($24) — City Center
-  • The Gopinivas Grand
-  ₹2,754 per night ($30) — Grand Experience
-  • Hotel Sun World
-  ₹19 per night — World Class
+  ₹3,121 per night ($34) — Royal Ambiance
+  • Amaari Beach Resort
+  ₹2,203 per night ($24) — Luxury Amenities
+  • Hotel Samudra
+  ₹2,203 per night ($24) — Ocean Views
+  • Hotel Cyril
+  ₹2,203 per night ($24) — Cozy Rooms
 
 --------------------------------------------------------
   🚗  TRANSPORT OPTIONS
 --------------------------------------------------------
     • ✈ By Air
-  • Nearest Airport : Coimbatore International Airport (CJB)
-  • Distance to Kanyakumari : Not directly available, but the nearest airport to Kanyakumari is Thiruvananthapuram International Airport (TRV) which is approximately 85 km away from Kanyakumari.
+  • Nearest Airport to Kanyakumari : Tuticorin Airport (TCR)
+  • Distance to Kanyakumari : Not specified, but it's mentioned as an option to fly to Tuticorin Airport
   • 🚆 By Train
   • Primary railway station : Coimbatore Jn
-  • Connectivity types : Indian Railways operates a train from Coimbatore Jn to Kanyakumari 3 times a day, with travel times ranging from 9h 35m to 11h 55m.
+  • Connectivity types : Direct trains available, with the fastest train being Cbe Ncj Sf Exp which takes 09:10 Hrs to cover the distance of approximately 536 Km
   • 🚌 By Bus
-  • Primary bus hub or state transport details : Kallada Tours and Travels operate bus services from Coimbatore to Kanyakumari via Kollam, with travel times ranging from 8h 2m to 11h.
+  • Primary bus hub or state transport details : Kallada Tours and Travels operate bus services from Coimbatore to Kanyakumari via Kollam, with a travel time of around 8h 2m and a cost of $10 - $27
   • 🚗 By Road
   • Coimbatore → Kanyakumari
-  • Distance : Not directly available, but the approximate distance is 570 km.
-  • Travel time : Approximately 6h 21m.
+  • Distance : 509 km
+  • Travel time : 6h 21m
 
 --------------------------------------------------------
   ✈  FLIGHTS (Live via Amadeus)
 --------------------------------------------------------
-  CJB → TRV
-Airline : Air India
-Departure : 14:20
-Arrival : 20:00
-Duration : 5h 40m
-Price : ₹16,286
+    CJB → TRV
+  Airline : Air India
+  Departure : 14:20
+  Arrival : 20:00
+  Duration : 5h 40m
+  Price : ₹16,251
+  
+    CJB → TRV
+  Airline : Air India
+  Departure : 14:20
+  Arrival : 07:55
+  Duration : 17h 35m
+  Price : ₹16,251
+  
+    CJB → TRV
+  Airline : Air India
+  Departure : 15:20
+  Arrival : 02:15
+  Duration : 10h 55m
+  Price : ₹16,450
 
 --------------------------------------------------------
   🗓  DAY-BY-DAY ITINERARY
 --------------------------------------------------------
   Day 1
-    Morning: Vivekananda Rock Memorial (Free)
-    Afternoon: Kanyakumari Beach (Free)
-    Evening: Sunset Point, Kanyakumari (Free)
+    Morning: Kanyakumari Sunrise View (Free)
+    Afternoon: Vivekananda Rock Memorial (INR 50)
+    Evening: Kanyakumari Beach (Free)
   Day 2
-    Morning: Thiruvalluvar Statue (Free)
-    Afternoon: Gandhi Mandapam (Free)
-    Evening: Kanyakumari Lighthouse (10 INR)
+    Morning: Thirparappu Waterfalls (INR 10)
+    Afternoon: Suchindram Shree Thanumalayan Swamy Temple (INR 10)
+    Evening: Gandhi Memorial (Free)
   Day 3
-    Morning: Kumari Amman Temple (Free)
-    Afternoon: Nagaraja Temple (Free)
-    Evening: Vattakottai Fort (Free)
+    Morning: Padmanabhapuram Palace (INR 50)
+    Afternoon: Kanyakumari Wax Museum (INR 50)
+    Evening: Kanyakumari Lighthouse (INR 10)
 
 --------------------------------------------------------
   🗺  MAP
 --------------------------------------------------------
-    🔗 View on Google Maps: https://maps.google.com/maps?q=Vivekananda%20Rock%20Memorial%2C%20Kanyakumari
+    🔗 View on Google Maps: https://maps.google.com/maps?q=Kanyakumari%20Sunrise%20View%2C%20Kanyakumari
   📍 Attractions:
+      ∙ Kanyakumari Sunrise View → https://maps.google.com/maps?q=Kanyakumari+Sunrise+View
       ∙ Vivekananda Rock Memorial → https://maps.google.com/maps?q=Vivekananda+Rock+Memorial
       ∙ Kanyakumari Beach → https://maps.google.com/maps?q=Kanyakumari+Beach
-      ∙ Sunset Point, Kanyakumari → https://maps.google.com/maps?q=Sunset+Point,+Kanyakumari
-      ∙ Thiruvalluvar Statue → https://maps.google.com/maps?q=Thiruvalluvar+Statue
-      ∙ Gandhi Mandapam → https://maps.google.com/maps?q=Gandhi+Mandapam
-      ∙ Kanyakumari Lighthouse → https://maps.google.com/maps?q=Kanyakumari+Lighthouse
-      ∙ Kumari Amman Temple → https://maps.google.com/maps?q=Kumari+Amman+Temple
-      ∙ Nagaraja Temple → https://maps.google.com/maps?q=Nagaraja+Temple
+      ∙ Thirparappu Waterfalls → https://maps.google.com/maps?q=Thirparappu+Waterfalls
+      ∙ Suchindram Shree Thanumalayan Swamy Temple → https://maps.google.com/maps?q=Suchindram+Shree+Thanumalayan+Swamy+Temple
+      ∙ Gandhi Memorial → https://maps.google.com/maps?q=Gandhi+Memorial
+      ∙ Padmanabhapuram Palace → https://maps.google.com/maps?q=Padmanabhapuram+Palace
+      ∙ Kanyakumari Wax Museum → https://maps.google.com/maps?q=Kanyakumari+Wax+Museum
 
   💰  ESTIMATED COST
 --------------------------------------------------------
   Cost Region      : 🇮🇳 India (Domestic)
   Exchange Rate    : 1 INR ≈ ₹1
-  Accommodation     : ₹123.60  ($1.47 (3 days × INR 41.20))
-  Flight (Amadeus)  : ₹16,286.00  (₹16,286)
+  Accommodation     : ₹10,332.00  ($123.00 (3 days × USD 41.00))
+  Flight (Amadeus)  : ₹16,251.00  (₹16,251)
   Food              : ₹1,800.00  (INR)
-  Misc / Activities : ₹10.00  (INR)
+  Misc / Activities : ₹180.00  (INR)
   ------------------------------------------
-  TOTAL             : ₹18,219.60
-  Within budget ✅
+  TOTAL             : ₹28,563.00
+  Exceeds budget ⚠️
 ========================================================

@@ -32,17 +32,19 @@ def transport_agent(state: dict) -> dict:
             prompt = (
                 f"Identify real transport options from {origin} to {destination} based on the text.\n"
                 f"You MUST include these sections with emojis:\n"
-                f"✈ By Air (Nearest airport name, code, and approx distance to city)\n"
+                f"✈ By Air (Nearest commercial airport to {destination}, its IATA code, and approx distance from that airport to {destination})\n"
                 f"🚆 By Train (Primary railway station and connectivity types)\n"
                 f"🚌 By Bus (Primary bus hub or state transport details)\n"
                 f"🚗 By Road (Origin → Destination, Distance in km, and approx Travel time)\n\n"
                 f"Structure the output exactly like this:\n"
-                f"✈ By Air\nNearest Airport : ...\nDistance to {destination} : ...\n\n🚆 By Train\n...\n\n🚌 By Bus\n...\n\n🚗 By Road\n{origin} → {destination}\nDistance : ...\nTravel time : ...\n\n"
+                f"✈ By Air\nNearest Airport to {destination} : ...\nDistance to {destination} : ...\n\n🚆 By Train\n...\n\n🚌 By Bus\n...\n\n🚗 By Road\n{origin} → {destination}\nDistance : ...\nTravel time : ...\n\n"
                 f"Text: {combined_text}"
             )
             res = llm.invoke(prompt)
             final_transport = res.content.strip()
             return {"transport": final_transport}
+            
+        return {"transport": "Transport information unavailable."}
 
     except Exception as e:
         print(f"Transport search failed: {e}")
