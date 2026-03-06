@@ -167,13 +167,52 @@ _CATEGORY_DEFAULTS = [
 ]
 
 
-def _get_time_fee(place: str) -> str:
-    """Return formatted '(⏱ ~2 hrs | 🎟 Free)' string for a given place."""
+# We will import region detection from budget.py to fetch currency details
+from .budget import _detect_region, _REGION_CONFIG
+
+def _get_time_fee(place: str, destination: str) -> str:
+    """Return formatted '(⏱ ~2 hrs | 🎟 €2 (₹180))' string for a given place based on local currency."""
     pl = place.lower()
-    for keyword, time_est, fee in _CATEGORY_DEFAULTS:
+    base_inr_fee_str = "Varies"
+    time_est = "~2 hrs"
+
+    # Find the hardcoded INR fee and time estimate from our defaults
+    for keyword, t_est, f_est in _CATEGORY_DEFAULTS:
         if keyword in pl:
-            return f"(⏱ {time_est} | 🎟 {fee})"
-    return "(⏱ ~2 hrs | 🎟 Varies)"  # generic fallback
+            time_est = t_est
+            base_inr_fee_str = f_est
+            break
+
+    # If it's "Free" or "Varies", just return it
+    if base_inr_fee_str in ("Free", "Varies"):
+        return f"(⏱ {time_est} | 🎟 {base_inr_fee_str})"
+
+    # Otherwise, it's something like "~₹200". Extract the number.
+    try:
+        base_inr = int(re.sub(r"\D", "", base_inr_fee_str))
+    except ValueError:
+        return f"(⏱ {time_est} | 🎟 {base_inr_fee_str})"
+
+    # Detect region currency
+    region = _detect_region(destination)
+    cfg    = _REGION_CONFIG[region]
+
+    if cfg["currency"] == "INR":
+        return f"(⏱ {time_est} | 🎟 ~₹{base_inr})"
+
+    # Convert the base INR fee into local currency
+    rate = cfg["inr_rate"]
+    local_fee = base_inr / rate
+
+    # Format nicely (e.g., €2, $5, AED 15, ¥500)
+    if cfg["currency"] in ("JPY", "KRW"):
+        local_fee_str = f"{cfg['symbol']}{int(local_fee)}"
+    elif local_fee < 10:
+        local_fee_str = f"{cfg['symbol']}{local_fee:.1f}".replace(".0", "")
+    else:
+        local_fee_str = f"{cfg['symbol']}{int(local_fee)}"
+
+    return f"(⏱ {time_est} | 🎟 ~{local_fee_str} (₹{base_inr}))"
 
 
 def _build_itinerary(attractions: list, days: int, destination: str) -> str:
@@ -192,7 +231,7 @@ def _build_itinerary(attractions: list, days: int, destination: str) -> str:
             day_items = attractions[idx: idx + 2]
             idx += 2
             for i, place in enumerate(day_items):
-                tf = _get_time_fee(place)
+                tf = _get_time_fee(place, destination)
                 lines.append(f"     {slots[i + 1]}: Visit {place}  {tf}")
             if len(day_items) < 2:
                 lines.append(f"     {slots[2]}: Relax and explore local area")
@@ -202,7 +241,7 @@ def _build_itinerary(attractions: list, days: int, destination: str) -> str:
             day_items = attractions[idx: idx + 2] if idx < n else []
             idx += 2
             for i, place in enumerate(day_items):
-                tf = _get_time_fee(place)
+                tf = _get_time_fee(place, destination)
                 lines.append(f"     {slots[i]}: Visit {place}  {tf}")
             if len(day_items) < 2:
                 lines.append(f"     {slots[1]}: Rest and explore surroundings")
@@ -213,7 +252,7 @@ def _build_itinerary(attractions: list, days: int, destination: str) -> str:
             day_items = attractions[idx: idx + 3] if idx < n else []
             idx += 3
             for i, place in enumerate(day_items):
-                tf = _get_time_fee(place)
+                tf = _get_time_fee(place, destination)
                 lines.append(f"     {slots[i]}: Visit {place}  {tf}")
             # Pad missing slots
             for i in range(len(day_items), 3):
