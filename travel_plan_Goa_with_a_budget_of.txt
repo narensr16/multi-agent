@@ -1,0 +1,83 @@
+
+========================================================
+🌍  AI TRAVEL PLAN
+=================
+
+  Destination    : Goa with a budget of
+  Duration       : 5 day(s)
+  Budget         : ₹50,000
+
+--------------------------------------------------------
+  🌤  WEATHER
+--------------------------------------------------------
+  Temperature : 25.9°C  (feels like 28.6°C)
+  Condition   : Clear
+  Humidity    : 83%
+  Wind        : 4.0 km/h
+
+--------------------------------------------------------
+  🏨  HOTELS
+--------------------------------------------------------
+  • Planet Hollywood Beach Resort Goa, Utorda Beach
+  • Goa as it is the first and only Planet Hollywood
+  • Taj Holiday Villa
+  • Star Beachfront Resort
+  • Private Beach and Private Pool Suites
+
+--------------------------------------------------------
+  🚗  TRANSPORT OPTIONS
+--------------------------------------------------------
+  ✈  By Air   : If you are looking to book airline tickets from United States to Goa you have options.
+  🚆  By Train : Take a train to Thivim Railway Station, the closest station to major beaches like Baga, Calangute, and Anjuna.
+  🚌  By Bus   : Missing: highway - Show results with: highway Mar 3, 2025 · By Bus: A number of private buses from Mumbai, Pune, and Bangalore offer low fares.
+
+--------------------------------------------------------
+  ✈  FLIGHTS (Live via Amadeus)
+--------------------------------------------------------
+Flight search skipped: no IATA code found for 'Goa with a budget of'.
+
+--------------------------------------------------------
+  🗓  DAY-BY-DAY ITINERARY
+--------------------------------------------------------
+
+  📅 Day 1
+  ────────────────────────────────────────
+     🌅 Morning   : Arrive in Goa with a budget of, check-in & freshen up
+     ☀️  Afternoon: Visit Beach Bumming
+     🌙 Evening   : Visit Arambol Beach
+
+  📅 Day 2
+  ────────────────────────────────────────
+     🌅 Morning   : Visit Canacona Beach
+     ☀️  Afternoon: Visit Dil Chahta Hai Fort
+     🌙 Evening   : Visit Chapora Fort
+
+  📅 Day 3
+  ────────────────────────────────────────
+     🌅 Morning   : Visit Dil Chahta Hai
+     ☀️  Afternoon: Visit Bhagwan Mahavir Wildlife Sanctuary
+     🌙 Evening   : Visit Dudhsagar Falls
+
+  📅 Day 4
+  ────────────────────────────────────────
+     🌅 Morning   : Visit West Coast
+     ☀️  Afternoon: Visit Lamrin Ucassaim Hotel
+     🌙 Evening   : Visit Why Goa's Rainy Season
+
+  📅 Day 5
+  ────────────────────────────────────────
+     🌅 Morning   : Visit Where Celebrities Unwind Lamrin
+     ☀️  Afternoon: Visit Goa That Feels Easy
+     🌙 Evening   : Pack up and depart from Goa with a budget of
+
+--------------------------------------------------------
+  💰  ESTIMATED COST
+--------------------------------------------------------
+  Accommodation     : ₹  15,000
+  Local Transport   : ₹   1,500
+  Food              : ₹   3,500
+  Misc              : ₹   2,500
+  --------------------------------
+  TOTAL             : ₹  22,500
+  Within budget ✅
+========================================================

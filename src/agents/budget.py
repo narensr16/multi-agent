@@ -1,76 +1,246 @@
 """
-budget.py — Budget Agent
+budget.py — Budget Agent (Currency-Aware)
 
-Calculates a realistic trip cost estimate.
+Detects the destination's local currency, estimates realistic costs in that
+currency, then converts everything to INR for display.
 
-Formula:
-    hotel_cost     = days * 3000
-    food_cost      = days * 700
-    misc_cost      = days * 500
-    transport_cost = cheapest Amadeus flight price (if found) else 1500
-    total          = sum of above
+Currency conversion rates (approximate, Mar 2026):
+  EUR → INR : 90    (Europe)
+  USD → INR : 84    (USA, Canada, SE Asia, South Asia)
+  GBP → INR : 107   (UK)
+  AED → INR : 23    (Middle East)
+  AUD → INR : 55    (Australia/NZ)
+  JPY → INR : 0.56  (Japan)
+  KRW → INR : 0.062 (South Korea)
+  SGD → INR : 63    (Singapore)
+  THB → INR : 2.5   (Thailand)
+  MYR → INR : 19    (Malaysia)
+  IDR → INR : 0.0053(Indonesia)
 
-Writes: estimated_cost (dict with itemised breakdown + total)
+Writes: estimated_cost (dict with itemised breakdown + total in INR)
 """
 
 import re
 
+# ── Currency configs per region ────────────────────────────────────────────────
+# Each entry:
+#   currency    : ISO code shown to user
+#   symbol      : display prefix
+#   inr_rate    : 1 unit of local currency = X INR
+#   hotel_night : realistic nightly hotel cost (local currency)
+#   food_day    : realistic food spend per day (local currency)
+#   misc_day    : sightseeing / transport per day (local currency)
+#   flight_est  : round-trip / one-way flight estimate (local currency)
 
-def _parse_cheapest_flight(flights_text: str) -> float | None:
-    """
-    Parse the cheapest flight price from the flights string produced by flight_agent.
-    Looks for patterns like '₹9,608' or '₹4,820' in the first result line.
-    Returns the float value, or None if no price found.
-    """
-    if not flights_text or "skipped" in flights_text.lower() or "failed" in flights_text.lower():
+_REGION_CONFIG = {
+    "india": dict(
+        currency="INR", symbol="₹", inr_rate=1,
+        hotel_night=2500, food_day=600, misc_day=400, flight_est=4500,
+    ),
+    "south_asia": dict(
+        currency="USD", symbol="$", inr_rate=84,
+        hotel_night=40,  food_day=20,  misc_day=12,  flight_est=200,
+    ),
+    "southeast_asia_budget": dict(  # Thailand, Vietnam, Indonesia, Cambodia
+        currency="USD", symbol="$", inr_rate=84,
+        hotel_night=35,  food_day=18,  misc_day=15,  flight_est=250,
+    ),
+    "southeast_asia_premium": dict(  # Singapore, KL
+        currency="USD", symbol="$", inr_rate=84,
+        hotel_night=80,  food_day=35,  misc_day=25,  flight_est=350,
+    ),
+    "middle_east": dict(
+        currency="AED", symbol="AED", inr_rate=23,
+        hotel_night=250, food_day=100, misc_day=70,  flight_est=1800,
+    ),
+    "europe": dict(
+        currency="EUR", symbol="€", inr_rate=90,
+        hotel_night=120, food_day=55,  misc_day=35,  flight_est=750,
+    ),
+    "uk": dict(
+        currency="GBP", symbol="£", inr_rate=107,
+        hotel_night=110, food_day=45,  misc_day=30,  flight_est=650,
+    ),
+    "usa_canada": dict(
+        currency="USD", symbol="$", inr_rate=84,
+        hotel_night=130, food_day=60,  misc_day=40,  flight_est=1100,
+    ),
+    "japan": dict(
+        currency="JPY", symbol="¥", inr_rate=0.56,
+        hotel_night=10000, food_day=4000, misc_day=3000, flight_est=60000,
+    ),
+    "south_korea": dict(
+        currency="KRW", symbol="₩", inr_rate=0.062,
+        hotel_night=80000, food_day=35000, misc_day=20000, flight_est=500000,
+    ),
+    "australia_nz": dict(
+        currency="AUD", symbol="AUD", inr_rate=55,
+        hotel_night=130, food_day=55,  misc_day=35,  flight_est=1500,
+    ),
+    "africa": dict(
+        currency="USD", symbol="$", inr_rate=84,
+        hotel_night=80,  food_day=35,  misc_day=25,  flight_est=900,
+    ),
+}
+
+# ── Destination → region mapping ───────────────────────────────────────────────
+_EUROPE = {
+    "barcelona", "madrid", "paris", "rome", "milan", "venice", "florence",
+    "amsterdam", "berlin", "munich", "frankfurt", "zurich", "geneva",
+    "vienna", "prague", "budapest", "brussels", "lisbon", "athens",
+    "stockholm", "copenhagen", "oslo", "helsinki", "warsaw", "krakow",
+    "porto", "seville", "valencia", "naples", "bologna", "marseille",
+    "lyon", "nice", "bordeaux", "zurich", "berne", "salzburg",
+    "dubrovnik", "split", "zagreb", "sarajevo", "sofia", "bucharest",
+    "riga", "tallinn", "vilnius", "reykjavik", "iceland",
+    "spain", "france", "germany", "italy", "netherlands", "portugal",
+    "austria", "switzerland", "greece", "belgium", "denmark", "sweden",
+    "norway", "finland", "poland", "czech", "hungary", "croatia",
+    "europe", "schengen",
+}
+_UK = {"london", "edinburgh", "manchester", "glasgow", "birmingham", "uk", "england", "scotland", "ireland", "dublin"}
+_USA_CANADA = {"new york", "los angeles", "chicago", "san francisco", "miami", "las vegas", "seattle", "Toronto", "vancouver", "montreal", "cancun", "mexico city", "usa", "canada", "america"}
+_JAPAN = {"tokyo", "osaka", "kyoto", "hiroshima", "nara", "fukuoka", "hokkaido", "japan"}
+_SOUTH_KOREA = {"seoul", "busan", "jeju", "korea", "south korea"}
+_AUS_NZ = {"sydney", "melbourne", "brisbane", "perth", "cairns", "gold coast", "auckland", "wellington", "christchurch", "australia", "new zealand"}
+_MIDDLE_EAST = {"dubai", "abu dhabi", "doha", "riyadh", "jeddah", "muscat", "kuwait", "bahrain", "sharjah", "qatar", "oman", "saudi"}
+_SE_ASIA_PREMIUM = {"singapore", "kuala lumpur", "kl", "penang"}
+_SE_ASIA_BUDGET = {"bangkok", "phuket", "chiang mai", "bali", "denpasar", "jakarta", "lombok", "ho chi minh", "hanoi", "da nang", "saigon", "phnom penh", "yangon", "manila", "cebu", "pattaya", "krabi", "vietnam", "thailand", "indonesia", "cambodia", "myanmar", "philippines", "malaysia"}
+_SOUTH_ASIA = {"colombo", "kathmandu", "pokhara", "dhaka", "maldives", "male", "thimphu", "paro", "bhutan", "nepal", "sri lanka", "bangladesh"}
+_AFRICA = {"nairobi", "cape town", "johannesburg", "cairo", "casablanca", "addis ababa", "kenya", "south africa", "egypt", "morocco", "ethiopia"}
+
+
+def _detect_region(destination: str) -> str:
+    d = destination.lower().strip()
+    if d in _EUROPE or any(e in d for e in _EUROPE):         return "europe"
+    if d in _UK or any(e in d for e in _UK):                return "uk"
+    if d in _USA_CANADA or any(e in d for e in _USA_CANADA): return "usa_canada"
+    if d in _JAPAN or any(e in d for e in _JAPAN):          return "japan"
+    if d in _SOUTH_KOREA or any(e in d for e in _SOUTH_KOREA): return "south_korea"
+    if d in _AUS_NZ or any(e in d for e in _AUS_NZ):        return "australia_nz"
+    if d in _MIDDLE_EAST or any(e in d for e in _MIDDLE_EAST): return "middle_east"
+    if d in _SE_ASIA_PREMIUM or any(e in d for e in _SE_ASIA_PREMIUM): return "southeast_asia_premium"
+    if d in _SE_ASIA_BUDGET or any(e in d for e in _SE_ASIA_BUDGET): return "southeast_asia_budget"
+    if d in _SOUTH_ASIA or any(e in d for e in _SOUTH_ASIA): return "south_asia"
+    if d in _AFRICA or any(e in d for e in _AFRICA):        return "africa"
+    return "india"
+
+
+_REGION_LABELS = {
+    "india":                   "🇮🇳 India (Domestic)",
+    "south_asia":              "🌏 South Asia (USD)",
+    "southeast_asia_budget":   "🌏 SE Asia Budget (USD)",
+    "southeast_asia_premium":  "🌏 SE Asia Premium (USD)",
+    "middle_east":             "🌍 Middle East (AED)",
+    "europe":                  "🌍 Europe (EUR)",
+    "uk":                      "🌍 UK (GBP)",
+    "usa_canada":              "🌎 USA/Canada (USD)",
+    "japan":                   "🌏 Japan (JPY)",
+    "south_korea":             "🌏 South Korea (KRW)",
+    "australia_nz":            "🌏 Australia/NZ (AUD)",
+    "africa":                  "🌍 Africa (USD)",
+}
+
+
+def _parse_cheapest_flight_inr(flights_text: str) -> float | None:
+    """Parse cheapest flight price from Amadeus output (already in INR)."""
+    if not flights_text:
         return None
-
-    # Find all ₹ prices
+    lower = flights_text.lower()
+    if any(kw in lower for kw in ("skipped", "failed", "budget too low", "no flights", "no iata")):
+        return None
     prices = re.findall(r"₹([\d,]+)", flights_text)
     if not prices:
         return None
-
     amounts = []
     for p in prices:
         try:
             amounts.append(float(p.replace(",", "")))
         except ValueError:
             continue
-
     return min(amounts) if amounts else None
 
 
 def budget_agent(state: dict) -> dict:
     """
-    Estimate trip cost for state["days"], using real flight price if available.
+    Estimate trip cost in local currency, convert to INR.
     Writes: estimated_cost (dict)
     """
-    days   = state.get("days", 3)
-    budget = state.get("budget", 0)
+    days        = state.get("days", 3)
+    budget_inr  = float(state.get("budget", 10000))
+    destination = str(state.get("destination", "") or "")
 
     try:
         days = int(days)
     except (TypeError, ValueError):
         days = 3
+    if days < 1:
+        days = 1
 
-    # Try to pull cheapest flight from Amadeus results
-    flights_text    = state.get("flights") or ""
-    flight_price    = _parse_cheapest_flight(flights_text)
-    transport_cost  = flight_price if flight_price else 1500
-    transport_label = "Flight (Amadeus)" if flight_price else "Local Transport"
+    # ── Detect region ─────────────────────────────────────────────────────────
+    region  = _detect_region(destination)
+    cfg     = _REGION_CONFIG[region]
+    rate    = cfg["inr_rate"]           # 1 local unit = rate INR
+    sym     = cfg["symbol"]
+    cur     = cfg["currency"]
 
-    hotel_cost = days * 3000
-    food_cost  = days * 700
-    misc_cost  = days * 500
-    total      = hotel_cost + transport_cost + food_cost + misc_cost
+    # ── Hotel: budget-proportional but capped at cfg baseline ─────────────────
+    # Convert budget to local currency
+    budget_local = budget_inr / rate
+
+    # Hotel cap: min of budget-driven (25%/days) and cfg baseline
+    per_night_local = min(budget_local * 0.25 / days, cfg["hotel_night"])
+    # For non-India: floor at 40% of regional baseline (can't show ₹100/night in Paris)
+    if region != "india":
+        per_night_local = max(per_night_local, cfg["hotel_night"] * 0.4)
+
+    hotel_local = round(per_night_local * days, 2)
+    hotel_inr   = round(hotel_local * rate)
+
+    # ── Food ─────────────────────────────────────────────────────────────────
+    food_day_local = min(budget_local * 0.15 / days, cfg["food_day"])
+    if region != "india":
+        food_day_local = max(food_day_local, cfg["food_day"] * 0.4)
+    food_local = round(food_day_local * days, 2)
+    food_inr   = round(food_local * rate)
+
+    # ── Misc / Activities ────────────────────────────────────────────────────
+    misc_day_local = min(budget_local * 0.10 / days, cfg["misc_day"])
+    if region != "india":
+        misc_day_local = max(misc_day_local, cfg["misc_day"] * 0.3)
+    misc_local = round(misc_day_local * days, 2)
+    misc_inr   = round(misc_local * rate)
+
+    # ── Transport (flight) ───────────────────────────────────────────────────
+    flight_inr_live = _parse_cheapest_flight_inr(state.get("flights") or "")
+
+    if flight_inr_live and flight_inr_live <= budget_inr * 0.70:
+        transport_inr   = flight_inr_live
+        transport_label = "Flight (Amadeus)"
+        transport_local_str = f"₹{int(transport_inr):,}"
+    else:
+        # Use region-appropriate flight estimate (in local currency → INR)
+        transport_local = cfg["flight_est"]
+        transport_inr   = round(transport_local * rate)
+        transport_label = f"Est. Flight ({cur})"
+        transport_local_str = f"{sym}{transport_local:,.0f} ≈ ₹{int(transport_inr):,}"
+
+    total_inr = hotel_inr + transport_inr + food_inr + misc_inr
 
     return {
         "estimated_cost": {
-            "hotel_cost":      hotel_cost,
-            "transport_cost":  transport_cost,
-            "transport_label": transport_label,
-            "food_cost":       food_cost,
-            "misc_cost":       misc_cost,
-            "total":           total,
+            "hotel_cost":         hotel_inr,
+            "hotel_local":        f"{sym}{hotel_local:,.0f} ({cur})",
+            "transport_cost":     transport_inr,
+            "transport_label":    transport_label,
+            "transport_local":    transport_local_str,
+            "food_cost":          food_inr,
+            "food_local":         f"{sym}{food_local:,.0f} ({cur})",
+            "misc_cost":          misc_inr,
+            "misc_local":         f"{sym}{misc_local:,.0f} ({cur})",
+            "total":              total_inr,
+            "region":             _REGION_LABELS.get(region, region),
+            "currency":           cur,
+            "inr_rate":           rate,
         }
     }

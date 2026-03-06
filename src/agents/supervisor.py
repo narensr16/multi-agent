@@ -61,11 +61,23 @@ def _extract_origin(text: str) -> str:
 def _extract_days(text: str) -> int:
     """
     Supports formats:
-      5 day / 5 days / 5-day trip / 7 day trip
+      5 day / 5 days / 5-day trip / 5-trip / 5 nights / 1 week
     """
+    # Match "5-day", "5 days", "5 day"
     match = re.search(r"(\d+)\s*[-]?\s*day", text, re.IGNORECASE)
     if match:
         return int(match.group(1))
+
+    # Match "5-trip", "5 night", "5 nights"
+    match = re.search(r"(\d+)\s*[-]?\s*(?:trip|night|nights)", text, re.IGNORECASE)
+    if match:
+        return int(match.group(1))
+
+    # Match "1 week" / "2 weeks"
+    match = re.search(r"(\d+)\s*[-]?\s*week", text, re.IGNORECASE)
+    if match:
+        return int(match.group(1)) * 7
+
     return 3
 
 
@@ -158,27 +170,42 @@ def supervisor_final(state: AgentState) -> dict:
     else:
         map_block = "  Map unavailable.\n"
 
-    # ── Cost block ────────────────────────────────────────────────────────────
+    # ── Cost block ─────────────────────────────────────────────────────────────
     if isinstance(cost_info, dict):
-        hotel_cost       = cost_info.get("hotel_cost", 0)
-        transport_cost   = cost_info.get("transport_cost", 0)
-        transport_label  = cost_info.get("transport_label", "Transport")
-        food_cost        = cost_info.get("food_cost", 0)
-        misc_cost        = cost_info.get("misc_cost", 0)
-        total            = cost_info.get("total", 0)
-        verdict          = "Within budget ✅" if total <= budget else "Exceeds budget ⚠️"
+        hotel_cost      = cost_info.get("hotel_cost", 0)
+        transport_cost  = cost_info.get("transport_cost", 0)
+        transport_label = cost_info.get("transport_label", "Transport")
+        food_cost       = cost_info.get("food_cost", 0)
+        misc_cost       = cost_info.get("misc_cost", 0)
+        total           = cost_info.get("total", 0)
+        region_label    = cost_info.get("region", "")
+        currency        = cost_info.get("currency", "INR")
+        inr_rate        = cost_info.get("inr_rate", 1)
+        # Local currency sub-labels (only shown for non-INR)
+        hotel_local     = cost_info.get("hotel_local", "")
+        food_local      = cost_info.get("food_local", "")
+        misc_local      = cost_info.get("misc_local", "")
+        transport_local = cost_info.get("transport_local", "")
+        verdict         = "Within budget ✅" if total <= budget else "Exceeds budget ⚠️"
 
+        def _local(s): return f"  ({s})" if s and currency != "INR" else ""
+
+        region_note = f"  Cost Region      : {region_label}\n" if region_label else ""
+        rate_note   = f"  Exchange Rate    : 1 {currency} ≈ ₹{inr_rate:.1f}\n" if currency != "INR" else ""
         cost_block = (
-            f"  {'Accommodation':<18}: ₹{hotel_cost:>8,.0f}\n"
-            f"  {transport_label:<18}: ₹{transport_cost:>8,.0f}\n"
-            f"  {'Food':<18}: ₹{food_cost:>8,.0f}\n"
-            f"  {'Misc':<18}: ₹{misc_cost:>8,.0f}\n"
-            f"  {'-' * 32}\n"
+            f"{region_note}"
+            f"{rate_note}"
+            f"  {'Accommodation':<18}: ₹{hotel_cost:>8,.0f}{_local(hotel_local)}\n"
+            f"  {transport_label:<18}: ₹{transport_cost:>8,.0f}{_local(transport_local)}\n"
+            f"  {'Food':<18}: ₹{food_cost:>8,.0f}{_local(food_local)}\n"
+            f"  {'Misc / Activities':<18}: ₹{misc_cost:>8,.0f}{_local(misc_local)}\n"
+            f"  {'-' * 42}\n"
             f"  {'TOTAL':<18}: ₹{total:>8,.0f}\n"
             f"  {verdict}"
         )
     else:
         cost_block = "  Cost data unavailable."
+
 
     summary = (
         f"\n{SEP}\n"
