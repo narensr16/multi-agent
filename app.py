@@ -74,7 +74,7 @@ def _render_plan(plan: str):
             return line
 
         map_lines = map_part.split("\n")
-        rendered = "\n".join(_linkify(l) for l in map_lines)
+        rendered = "  \n".join(_linkify(l) for l in map_lines)
         st.markdown(rendered)
         st.markdown("---")
 

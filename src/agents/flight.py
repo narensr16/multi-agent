@@ -338,7 +338,7 @@ def flight_agent(state: dict) -> dict:
         return {"flights": "Flight search skipped: destination unknown."}
 
     # ── Budget guard: skip flights when budget is too low ──────────────────────
-    if budget < 3000:
+    if budget < 5000:
         return {"flights": f"  ⚠️  Budget too low for flights (₹{budget:,.0f}). Consider train or bus travel instead."}
 
     if not AMADEUS_KEY or not AMADEUS_SECRET:

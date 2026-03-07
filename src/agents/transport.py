@@ -67,8 +67,8 @@ def transport_agent(state: dict) -> dict:
             llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
             prompt = (
                 f"You are a travel assistant extracting transport data from {origin} to {destination}.\n"
-                f"Based on the text context provided, formulate the transport options EXACTLY in this Markdown format, keeping the bold headers, spacing, and bullet styles identical.\n"
-                f"Do not use 'Not specified' or 'Unknown' if the context implies an answer. Do not use Markdown header tags like `###` or `####`.\n\n"
+                f"Based on the text context provided, formulate the transport options EXACTLY in this plain text format, keeping the spacing and bullet styles identical.\n"
+                f"Do not use 'Not specified' or 'Unknown' if the context implies an answer. Do not use Markdown header tags like `###` or `####` and NEVER use bolding asterisks `**`.\n\n"
                 f"✈ By Air\n"
                 f"Nearest Airport : Extract airport name and IATA code\n"
                 f"Distance : Extract approx distance to destination\n\n"
