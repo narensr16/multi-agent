@@ -345,7 +345,10 @@ def flight_agent(state: dict) -> dict:
         return {"flights": "Flight search skipped: AMADEUS_API_KEY / AMADEUS_API_SECRET not configured."}
 
     origin_name = state.get("origin", "")
-    dest_iata = _get_iata(destination)
+    dest_iata = state.get("destination_iata")
+    if not dest_iata or dest_iata == "Unknown":
+        dest_iata = _get_iata(destination)
+        
     if not dest_iata:
         return {"flights": f"Flight search skipped: no IATA code found for '{destination}'."}
 
@@ -385,9 +388,10 @@ def flight_agent(state: dict) -> dict:
         
         all_flight_blocks = []
         emojis = ["1️⃣", "2️⃣", "3️⃣"]
+        from datetime import datetime
+
         for idx, offer in enumerate(top_offers):
             itinerary = offer["itineraries"][0]
-            duration = _format_duration(itinerary["duration"])
             price_inr = float(offer["price"]["grandTotal"])
             
             segments = itinerary["segments"]
@@ -396,6 +400,16 @@ def flight_agent(state: dict) -> dict:
             
             airline_code = first_seg["carrierCode"]
             airline_name = AIRLINE_NAMES.get(airline_code, airline_code)
+            
+            # Duration Calculation
+            try:
+                t1 = datetime.fromisoformat(first_seg["departure"]["at"].replace("Z", "+00:00"))
+                t2 = datetime.fromisoformat(last_seg["arrival"]["at"].replace("Z", "+00:00"))
+                diff = t2 - t1
+                total_s = int(diff.total_seconds())
+                duration = f"{total_s // 3600}h {(total_s % 3600) // 60}m"
+            except Exception:
+                duration = _format_duration(itinerary["duration"])
             
             dep_time = first_seg["departure"]["at"].split("T")[1][:5]
             arr_time = last_seg["arrival"]["at"].split("T")[1][:5]
@@ -406,7 +420,7 @@ def flight_agent(state: dict) -> dict:
                 all_flight_blocks.append(f"{origin_iata} → {dest_iata}")
 
             block = [
-                f"{emoji} {airline_name}",
+                f"{emoji} {airline_name}\n",
                 f"Departure : {dep_time}",
                 f"Arrival : {arr_time}",
                 f"Duration : {duration}",

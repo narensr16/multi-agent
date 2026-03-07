@@ -54,15 +54,15 @@ def hotel_agent(state: dict) -> dict:
         if _GROQ_KEY and _GROQ_KEY != "your_groq_api_key_here":
             llm = ChatGroq(api_key=_GROQ_KEY, model_name="llama-3.1-8b-instant", temperature=0)
             prompt = (
-                f"Extract up to 5 ACTUAL, SPECIFIC hotel names in {destination} from the text below.\n"
+                f"Extract EXACTLY between 3 to 5 ACTUAL, SPECIFIC hotel names in {destination} from the text below.\n"
                 f"CRITICAL: Exclude generic phrases like '5-star hotels' or 'Various hotels'. Only real hotel names.\n"
                 f"For EACH hotel, provide:\n"
                 f"1. Name\n"
                 f"2. Nightly Room Rate as a number only (e.g., '170' for SGD 170)\n"
                 f"3. Local currency code (e.g., 'SGD', 'USD', 'INR')\n"
-                f"4. A 3-word highlight\n\n"
+                f"4. 'category' matching EXACTLY one of: 'Budget', 'Mid-range', or 'Luxury'\n\n"
                 f"Return ONLY a raw JSON dictionary with key 'hotel_data'.\n"
-                f'Example: {{"hotel_data": [{{"name": "Marina Bay Sands", "price": 400, "currency": "USD", "highlight": "Infinity Pool"}}]}}\n'
+                f'Example: {{"hotel_data": [{{"name": "Marina Bay Sands", "price": 400, "currency": "USD", "category": "Luxury"}}]}}\n'
                 f"Text: {combined_text}"
             )
             res = llm.invoke(prompt)
@@ -98,7 +98,7 @@ def hotel_agent(state: dict) -> dict:
                     continue
 
                 currency = str(item.get("currency", "USD")).upper().strip()
-                highlight = item.get("highlight", "Good Rating")
+                category = item.get("category", "Mid-range")
                 
                 # Conversion logic
                 rate = 1.0
@@ -131,7 +131,7 @@ def hotel_agent(state: dict) -> dict:
                 elif currency == "SGD":
                     price_line = f"₹{int(price_inr):,} per night (S${int(price_local)})"
 
-                formatted_hotels.append(f"{name}\n  {price_line} — {highlight}")
+                formatted_hotels.append(f"{name}\n  {price_line} — {category}")
 
             if not formatted_hotels:
                 formatted_hotels = [f"{destination} Central Hotel\n  ₹3,500 per night — Great Location"]

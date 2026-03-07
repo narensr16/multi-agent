@@ -222,14 +222,38 @@ def supervisor_final(state: AgentState) -> dict:
 
     dest_clean = destination.replace("Visit ", "").replace("to ", "").strip()
 
+    # ── Trip Summary ────────────────────────────────────────────────────────
+    hotel_type = "Budget" # fallback if we want to infer from hotel_cost, but simple default is fine
+    if isinstance(hotels_raw, list) and len(hotels_raw) > 0 and "Luxury" in hotels_raw[0]:
+        hotel_type = "Luxury"
+    elif isinstance(hotels_raw, list) and len(hotels_raw) > 0 and "Mid-range" in hotels_raw[0]:
+        hotel_type = "Mid-range"
+
+    summary_block = (
+        f"  ## TRIP SUMMARY\n\n"
+        f"  Origin : {state.get('origin', 'N/A')}\n"
+        f"  Destination : {dest_clean}\n"
+        f"  Duration : {days} days\n"
+        f"  Transport Mode : Flight + Road\n"
+        f"  Hotel Type : {hotel_type}\n"
+    )
+
+    if isinstance(cost_info, dict):
+        total_inr = cost_info.get("total", 0)
+        status = cost_info.get("budget_status", "Exceeds budget ⚠️")
+        summary_block += (
+            f"  Estimated Cost : ₹{total_inr:,.0f}\n"
+            f"  Budget Status : {status.split(' ')[0]} Budget\n"
+        )
+    else:
+        summary_block += "  Estimated Cost : N/A\n  Budget Status : N/A\n"
+
     # ── Final Report Assembly ────────────────────────────────────────────────
     summary = (
         f"{SEP}\n"
         f"🌍  AI TRAVEL PLAN\n"
         f"{'=' * 17}\n\n"
-        f"  Destination    : {dest_clean}\n"
-        f"  Duration       : {days} day(s)\n"
-        f"  Budget         : ₹{int(budget):,}\n\n"
+        f"{summary_block}\n"
         f"{SEP2}\n"
         f"  🌤  WEATHER\n"
         f"{SEP2}\n"
@@ -265,6 +289,11 @@ def supervisor_final(state: AgentState) -> dict:
         h_cost = cost_info.get("hotel_local", "N/A")
         f_inr = cost_info.get("transport_cost", 0)
         food_inr = cost_info.get("food_cost", 0)
+        
+        # Calculate per-day dynamically
+        days_int = int(days) if str(days).isdigit() and int(days) > 0 else 3
+        food_per_day = food_inr / days_int
+        
         misc_inr = cost_info.get("misc_cost", 0)
         total_inr = cost_info.get("total", 0)
         status = cost_info.get("budget_status", "Exceeds budget ⚠️")
@@ -274,7 +303,7 @@ def supervisor_final(state: AgentState) -> dict:
             f"  Exchange Rate    : {rate_info}\n"
             f"  Accommodation     : {h_cost}\n"
             f"  Flight (Amadeus)  : ₹{f_inr:,.2f}  (₹{f_inr:,.0f})\n"
-            f"  Food              : ₹{food_inr:,.2f}  (INR)\n"
+            f"  Food              : ₹{food_per_day:,.0f} × {days_int} days = ₹{food_inr:,.2f}\n"
             f"  Misc / Activities : ₹{misc_inr:,.2f}  (INR)\n"
             f"  {'-' * 42}\n"
             f"  TOTAL             : ₹{total_inr:,.2f}\n"

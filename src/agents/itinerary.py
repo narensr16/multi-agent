@@ -69,6 +69,7 @@ def itinerary_agent(state: dict) -> dict:
                 
                 prompt = (
                 f"Create a {days}-day travel itinerary for {destination}.\n"
+                f"CRITICAL: Keep travel realistic! Group attractions logically by geographic proximity each day. Do not make the user criss-cross the city or region.\n"
                 f"For EACH DAY, you MUST provide exactly 3 slots: Morning, Afternoon, and Evening.\n"
                 f"For EACH slot, provide:\n"
                 f"1. A specific attraction or activity name (e.g., 'Merlion Park')\n"

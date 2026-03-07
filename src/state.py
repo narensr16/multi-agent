@@ -17,6 +17,7 @@ class AgentState(TypedDict):
 
     # Parsed structured data
     destination: Optional[str]
+    destination_iata: Optional[str]
     origin: Optional[str]
     days: Optional[str]
     budget: Optional[float]
