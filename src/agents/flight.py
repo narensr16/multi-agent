@@ -384,7 +384,8 @@ def flight_agent(state: dict) -> dict:
         top_offers = offers[:3]
         
         all_flight_blocks = []
-        for offer in top_offers:
+        emojis = ["1️⃣", "2️⃣", "3️⃣"]
+        for idx, offer in enumerate(top_offers):
             itinerary = offer["itineraries"][0]
             duration = _format_duration(itinerary["duration"])
             price_inr = float(offer["price"]["grandTotal"])
@@ -399,9 +400,13 @@ def flight_agent(state: dict) -> dict:
             dep_time = first_seg["departure"]["at"].split("T")[1][:5]
             arr_time = last_seg["arrival"]["at"].split("T")[1][:5]
             
+            emoji = emojis[idx] if idx < len(emojis) else f"{idx+1}."
+            
+            if idx == 0:
+                all_flight_blocks.append(f"{origin_iata} → {dest_iata}")
+
             block = [
-                f"  {origin_iata} → {dest_iata}",
-                f"Airline : {airline_name}",
+                f"{emoji} {airline_name}",
                 f"Departure : {dep_time}",
                 f"Arrival : {arr_time}",
                 f"Duration : {duration}",

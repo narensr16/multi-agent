@@ -167,9 +167,9 @@ def supervisor_final(state: AgentState) -> dict:
 
     # ── Transport block (multi-line bullet support) ──────────────────────────
     if transport_raw:
-        transport_fmt = "\n".join(f"  • {line.strip()}" for line in transport_raw.split("\n") if line.strip())
+        transport_fmt = transport_raw.replace('\n', '\n  ')
     else:
-        transport_fmt = "  • Transport data unavailable."
+        transport_fmt = "Transport data unavailable."
 
     # ── Map block ─────────────────────────────────────────────────────────────
     if map_url:
